@@ -22,7 +22,7 @@ public class User {
     private String email;
     private String phoneNum;
     private String passwordHash;
-    private String roleId;
+    private String role;
 
     @OneToMany(mappedBy = "user")
     private List<Appointment> appointments;
