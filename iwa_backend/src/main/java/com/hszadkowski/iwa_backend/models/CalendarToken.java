@@ -13,13 +13,15 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CalendarToken {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "token_id")
     private Integer tokenId;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "app_user_id")
+    private AppUser appUser;
 
     private String provider;
     private String accessToken;

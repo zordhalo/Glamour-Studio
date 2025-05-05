@@ -13,8 +13,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Review {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "review_id")
     private Integer reviewId;
 
     @OneToOne
@@ -22,8 +24,8 @@ public class Review {
     private Appointment appointment;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "app_user_id")
+    private AppUser appUser;
 
     private Integer rating;
     private String comment;

@@ -13,13 +13,15 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Notification {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer notifId;
+    @Column(name = "notification_id")
+    private Integer notificationId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "app_user_id")
+    private AppUser appUser;
 
     @ManyToOne
     @JoinColumn(name = "appointment_id")
@@ -31,4 +33,3 @@ public class Notification {
     private String message;
     private LocalDate sentAt;
 }
-

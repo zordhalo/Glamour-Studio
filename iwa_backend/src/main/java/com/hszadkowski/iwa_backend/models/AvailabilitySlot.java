@@ -13,13 +13,15 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AvailabilitySlot {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "slot_id")
     private Integer slotId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "app_user_id")
+    private AppUser appUser;
 
     @ManyToOne
     @JoinColumn(name = "service_id")

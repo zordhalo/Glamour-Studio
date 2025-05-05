@@ -14,8 +14,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Payment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "payment_id")
     private Integer paymentId;
 
     @OneToOne
@@ -23,11 +25,10 @@ public class Payment {
     private Appointment appointment;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "app_user_id")
+    private AppUser appUser;
 
     private BigDecimal amount;
     private String status;
     private LocalDate paidAt;
 }
-

@@ -14,13 +14,15 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Appointment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "appointment_id")
     private Integer appointmentId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "app_user_id")
+    private AppUser appUser;
 
     @ManyToOne
     @JoinColumn(name = "service_id")
