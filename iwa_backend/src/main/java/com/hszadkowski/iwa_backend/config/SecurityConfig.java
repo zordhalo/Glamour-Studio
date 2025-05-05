@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,14 +17,14 @@ public class SecurityConfig {
         http
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/register").permitAll()
+                        .requestMatchers("/h2-console/**", "/register", "/user-already-exist").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**", "/register")
+                        .ignoringRequestMatchers("/h2-console/**", "/register", "/user-already-exist")
                 )
                 .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.disable())
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                 )
                 .formLogin(Customizer.withDefaults());
         return http.build();

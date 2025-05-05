@@ -1,41 +1,38 @@
 package com.hszadkowski.iwa_backend.controllers;
 
-import com.hszadkowski.iwa_backend.models.AppUser;
-import com.hszadkowski.iwa_backend.repos.UserRepository;
+import com.hszadkowski.iwa_backend.dto.RegisterUserRequestDto;
+import com.hszadkowski.iwa_backend.dto.UserResponseDto;
+import com.hszadkowski.iwa_backend.exceptions.UserAlreadyExistsException;
+import com.hszadkowski.iwa_backend.services.interfaces.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
 
 
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class UserController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody AppUser appUser) { // TODO: change this to dto
-        try {
-            String hashPwd = passwordEncoder.encode(appUser.getPasswordHash());
-            appUser.setPasswordHash(hashPwd);
-            AppUser savedUser = userRepository.save(appUser);
-
-            if (savedUser.getAppUserId() > 0) {
-                return ResponseEntity.status(HttpStatus.CREATED).body("User details successfully registered");
-            }
-            else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User registration failed");
-            }
-        }
-        catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An exception occurred " + ex.getMessage());
-        }
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponseDto register(@Valid @RequestBody RegisterUserRequestDto request) {
+        return userService.registerUser(request);
     }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<Void> handleUserExists(UserAlreadyExistsException ex) {
+        return ResponseEntity.status(303).location(URI.create("/user-already-exist")).build();
+    }
+
+
+
 }
 
-// TODO: transfer business logic to user service
