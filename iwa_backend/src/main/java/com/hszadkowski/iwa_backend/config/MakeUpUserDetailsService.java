@@ -28,4 +28,6 @@ public class MakeUpUserDetailsService implements UserDetailsService {
         return new User(appUser.getEmail(), appUser.getPasswordHash(), authorities);
 
     }
+
+
 }

@@ -16,11 +16,11 @@ public class SecurityConfig {
         http
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/h2-console/**", "/register").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**")
+                        .ignoringRequestMatchers("/h2-console/**", "/register")
                 )
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.disable())
