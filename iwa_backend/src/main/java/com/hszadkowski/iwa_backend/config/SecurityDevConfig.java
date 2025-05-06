@@ -11,13 +11,13 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration
-@Profile("!dev")
-public class SecurityConfig {
 
+@Configuration
+@Profile("dev")
+public class SecurityDevConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
+        http.requiresChannel(rcf -> rcf.anyRequest().requiresSecure()) // Only HTTPS traffic
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**", "/register", "/user-already-exist").permitAll()
