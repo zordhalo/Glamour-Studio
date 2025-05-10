@@ -17,20 +17,23 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityDevConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.requiresChannel(rcf -> rcf.anyRequest().requiresSecure()) // Only HTTPS traffic
+        http
+                .sessionManagement(smc -> smc.invalidSessionUrl("/invalidSession").maximumSessions(1))
+                .requiresChannel(rcf -> rcf.anyRequest().requiresSecure()) // Only HTTPS traffic
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/register", "/user-already-exist").permitAll()
+                        .requestMatchers("/h2-console/**", "/register", "/user-already-exist", "/invalidSession").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**", "/register", "/user-already-exist")
+                        .ignoringRequestMatchers("/h2-console/**", "/register", "/user-already-exist", "/invalidSession")
                 )
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                 )
                 .httpBasic(Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults());
+                .formLogin(Customizer.withDefaults())
+                .oauth2Login(Customizer.withDefaults());
         return http.build();
     }
 
