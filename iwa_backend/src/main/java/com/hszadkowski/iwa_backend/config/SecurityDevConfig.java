@@ -11,34 +11,34 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-
 @Configuration
 @Profile("dev")
 public class SecurityDevConfig {
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .sessionManagement(smc -> smc.invalidSessionUrl("/invalidSession").maximumSessions(1))
-                .requiresChannel(rcf -> rcf.anyRequest().requiresSecure()) // Only HTTPS traffic
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/register", "/user-already-exist", "/invalidSession").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**", "/register", "/user-already-exist", "/invalidSession")
-                )
-                .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
-                )
-                .httpBasic(Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults())
-                .oauth2Login(Customizer.withDefaults());
-        return http.build();
-    }
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                http
+                                .sessionManagement(smc -> smc.invalidSessionUrl("/invalidSession").maximumSessions(1))
+                                .requiresChannel(rcf -> rcf.anyRequest().requiresSecure()) // Only HTTPS traffic
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers("/h2-console/**", "/register", "/register/facebook",
+                                                                "/api/auth/facebook", "/user-already-exist",
+                                                                "/invalidSession")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
+                                .csrf(csrf -> csrf
+                                                .ignoringRequestMatchers("/h2-console/**", "/register",
+                                                                "/register/facebook", "/api/auth/facebook",
+                                                                "/user-already-exist", "/invalidSession"))
+                                .headers(headers -> headers
+                                                .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                                .httpBasic(Customizer.withDefaults())
+                                .formLogin(Customizer.withDefaults());
+                return http.build();
+        }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        }
 }
