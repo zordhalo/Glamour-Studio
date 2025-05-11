@@ -19,18 +19,15 @@ public class FacebookAuthController {
 
     @PostMapping("/api/auth/facebook")
     public ResponseEntity<UserResponseDto> facebookAuth(@RequestBody FacebookUserDto facebookUserDto) {
-        // Validate the Facebook access token
         if (!facebookService.validateFacebookToken(facebookUserDto.getAccessToken())) {
             return ResponseEntity.badRequest().build();
         }
 
-        // Get user info from Facebook
         FacebookUserDto validatedUser = facebookService.getFacebookUserInfo(facebookUserDto.getAccessToken());
         if (validatedUser == null) {
             return ResponseEntity.badRequest().build();
         }
 
-        // Register or login the user
         UserResponseDto userResponseDto = userService.registerFacebookUser(validatedUser);
         return ResponseEntity.ok(userResponseDto);
     }

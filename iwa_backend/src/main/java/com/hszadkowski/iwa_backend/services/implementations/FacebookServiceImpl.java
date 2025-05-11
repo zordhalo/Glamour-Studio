@@ -19,7 +19,7 @@ public class FacebookServiceImpl implements FacebookService {
     @Value("${FACEBOOK_APP_SECRET:}")
     private String facebookAppSecret;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplate(); // maybe later change to WebClient
 
     @Override
     public boolean validateFacebookToken(String accessToken) {
