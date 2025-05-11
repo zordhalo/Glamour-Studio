@@ -32,15 +32,16 @@ public class SecurityConfig {
                 .sessionManagement(smc -> smc.invalidSessionUrl("/invalidSession").maximumSessions(3))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/h2-console/**", "/register", "/user-already-exist", "/invalidSession").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/h2-console/**", "/register", "/register/facebook", "/api/auth/facebook",
+                                "/user-already-exist", "/invalidSession")
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/h2-console/**", "/register", "/user-already-exist", "/invalidSession")
-                )
+                        .ignoringRequestMatchers("/h2-console/**", "/register", "/register/facebook",
+                                "/api/auth/facebook",
+                                "/user-already-exist", "/invalidSession"))
                 .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
-                )
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(Customizer.withDefaults())
                 .oauth2Login(Customizer.withDefaults());
