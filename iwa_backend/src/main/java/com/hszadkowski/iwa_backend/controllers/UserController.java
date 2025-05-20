@@ -4,12 +4,15 @@ import com.hszadkowski.iwa_backend.dto.FacebookUserDto;
 import com.hszadkowski.iwa_backend.dto.RegisterUserRequestDto;
 import com.hszadkowski.iwa_backend.dto.UserResponseDto;
 import com.hszadkowski.iwa_backend.exceptions.UserAlreadyExistsException;
+import com.hszadkowski.iwa_backend.models.AppUser;
 import com.hszadkowski.iwa_backend.services.interfaces.FacebookService;
 import com.hszadkowski.iwa_backend.services.interfaces.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,6 +53,14 @@ public class UserController {
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Void> handleUserExists(UserAlreadyExistsException ex) {
         return ResponseEntity.status(303).location(URI.create("/user-already-exist")).build();
+    }
+
+    // just for testing
+    @GetMapping("/me")
+    public ResponseEntity<AppUser> authenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        AppUser currentUser = (AppUser) authentication.getPrincipal();
+        return ResponseEntity.ok(currentUser);
     }
 
 }

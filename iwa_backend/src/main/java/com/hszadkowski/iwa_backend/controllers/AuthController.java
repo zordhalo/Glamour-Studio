@@ -24,7 +24,7 @@ public class AuthController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AppUser> register(@RequestBody RegisterUserRequestDto registerUserDto) {
+    public ResponseEntity<AppUser> register(@RequestBody RegisterUserRequestDto registerUserDto) { // dodac default role na user, jesli tego sie nie doda uzytkownik bez roli nie moze sie zalogować
         AppUser registeredUser = authenticationService.signUp(registerUserDto);
         return ResponseEntity.ok(registeredUser);
     }

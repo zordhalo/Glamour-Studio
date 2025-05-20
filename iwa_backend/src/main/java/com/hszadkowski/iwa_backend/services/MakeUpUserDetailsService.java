@@ -1,4 +1,4 @@
-package com.hszadkowski.iwa_backend.config;
+package com.hszadkowski.iwa_backend.services;
 
 
 import com.hszadkowski.iwa_backend.models.AppUser;

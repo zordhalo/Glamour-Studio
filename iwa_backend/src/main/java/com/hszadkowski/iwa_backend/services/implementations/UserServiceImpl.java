@@ -74,4 +74,6 @@ public class UserServiceImpl implements UserService {
                 saved.getAppUserId(), saved.getName(), saved.getSurname(),
                 saved.getEmail(), saved.getPhoneNum(), saved.getRole());
     }
+
+
 }
