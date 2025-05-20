@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -27,6 +28,9 @@ public class AppUser {
     private String phoneNum;
     private String passwordHash;
     private String role;
+    private String verificationCode;
+    private LocalDateTime verificationCodeExpiresAt;
+    private boolean enabled;
 
     @OneToMany(mappedBy = "appUser")
     private List<Appointment> appointments;
