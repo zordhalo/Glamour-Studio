@@ -9,7 +9,12 @@ import com.hszadkowski.iwa_backend.services.interfaces.AuthenticationService;
 import com.hszadkowski.iwa_backend.services.interfaces.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
@@ -25,9 +30,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> authenticate(@RequestBody LoginUserDto loginUserDto){
+    public ResponseEntity<LoginResponseDto> authenticate(@RequestBody LoginUserDto loginUserDto) {
         AppUser authenticatedUser = authenticationService.authenticate(loginUserDto);
-        String jwtToken = jwtService.generateToken(authenticatedUser);
+        UserDetails userDetails = User.builder()
+                .username(authenticatedUser.getEmail())
+                .password(authenticatedUser.getPasswordHash())
+                .authorities(List.of(new SimpleGrantedAuthority(authenticatedUser.getRole())))
+                .build();
+        String jwtToken = jwtService.generateToken(userDetails);
         LoginResponseDto loginResponse = new LoginResponseDto(jwtToken, jwtService.getExpirationTime());
         return ResponseEntity.ok(loginResponse);
     }
