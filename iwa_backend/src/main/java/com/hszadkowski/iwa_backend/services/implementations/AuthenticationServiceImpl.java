@@ -1,8 +1,7 @@
 package com.hszadkowski.iwa_backend.services.implementations;
 
-import com.hszadkowski.iwa_backend.dto.LoginUserDto;
-import com.hszadkowski.iwa_backend.dto.RegisterUserRequestDto;
-import com.hszadkowski.iwa_backend.dto.VerifyUserDto;
+import com.hszadkowski.iwa_backend.dto.*;
+import com.hszadkowski.iwa_backend.exceptions.UserAlreadyExistsException;
 import com.hszadkowski.iwa_backend.models.AppUser;
 import com.hszadkowski.iwa_backend.repos.UserRepository;
 import com.hszadkowski.iwa_backend.services.interfaces.AuthenticationService;
@@ -17,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -28,21 +28,61 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final EmailService emailService;
 
     @Override
-    public AppUser signUp(RegisterUserRequestDto input) {
+    public UserSignUpResponseDto signUp(RegisterUserRequestDto input) {
+
+        if (userRepository.existsByEmail(input.getEmail())) {
+            throw new UserAlreadyExistsException("Email '" + input.getEmail() + "' is already registered");
+        }
+
+        String role = (input.getRole() != null && !input.getRole().isBlank()) ? input.getRole().trim() : "USER";
+
         AppUser user = AppUser.builder()
                 .name(input.getName())
                 .surname(input.getSurname())
                 .email(input.getEmail())
                 .phoneNum(input.getPhoneNum())
                 .passwordHash(passwordEncoder.encode(input.getPassword()))
-                .role(input.getRole())
+                .role(role)
                 .build();
 
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
         user.setEnabled(false);
         sendVerificationEmail(user);
-        return userRepository.save(user);
+
+        AppUser saved = userRepository.save(user);
+        return new UserSignUpResponseDto(saved.getAppUserId(), saved.getName(), saved.getSurname(),
+                saved.getEmail(), saved.getPhoneNum(), saved.getRole(), saved.getVerificationCode());
+    }
+
+    @Override
+    public UserSignUpResponseDto signUpFacebookUser(FacebookUserDto facebookUser) {
+        if (userRepository.existsByEmail(facebookUser.getEmail())) {
+            throw new UserAlreadyExistsException("Email '" + facebookUser.getEmail() + "' is already registered");
+        }
+
+        String[] nameParts = facebookUser.getName().split(" ", 2);
+        String firstName = nameParts[0];
+        String lastName = nameParts.length > 1 ? nameParts[1] : "";
+
+        AppUser user = AppUser.builder()
+                .name(firstName)
+                .surname(lastName)
+                .email(facebookUser.getEmail())
+                .phoneNum(facebookUser.getPhoneNum() != null ? facebookUser.getPhoneNum() : "")
+                .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString())) // later send email to change the password
+                .role("USER")
+                .build();
+
+        user.setVerificationCode(generateVerificationCode());
+        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
+        user.setEnabled(false);
+        sendVerificationEmail(user); // later change to sendResetPasswordEmail(user) - add this function today
+
+        AppUser saved = userRepository.save(user);
+        return new UserSignUpResponseDto(saved.getAppUserId(), saved.getName(), saved.getSurname(),
+                saved.getEmail(), saved.getPhoneNum(), saved.getRole(), saved.getVerificationCode());
+
     }
 
     @Override
