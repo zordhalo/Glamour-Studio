@@ -30,6 +30,8 @@ public class AppUser {
     private String role;
     private String verificationCode;
     private LocalDateTime verificationCodeExpiresAt;
+    private String passwordResetCode;
+    private LocalDateTime passwordResetCodeExpiresAt;
     private boolean enabled;
 
     @OneToMany(mappedBy = "appUser")

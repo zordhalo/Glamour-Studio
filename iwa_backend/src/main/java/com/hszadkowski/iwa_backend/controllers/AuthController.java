@@ -24,7 +24,7 @@ public class AuthController {
     private final FacebookService facebookService;
 
     @PostMapping("/signup")
-    public ResponseEntity<UserSignUpResponseDto> register(@RequestBody RegisterUserRequestDto registerUserDto) { // dodac default role na user, jesli tego sie nie doda uzytkownik bez roli nie moze sie zalogować
+    public ResponseEntity<UserSignUpResponseDto> register(@RequestBody RegisterUserRequestDto registerUserDto) {
         UserSignUpResponseDto registeredUser = authenticationService.signUp(registerUserDto);
         return ResponseEntity.ok(registeredUser);
     }
@@ -75,5 +75,43 @@ public class AuthController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/pwdresetmail")
+    public ResponseEntity<?> sendPasswordResetEmail(@RequestParam String email) {
+        try {
+            authenticationService.sendPasswordResetEmail(email);
+            return ResponseEntity.ok("Password reset email has been sent");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/pwdreset")
+    public ResponseEntity<?> resetPassword(@RequestBody PasswordResetDto passwordResetDto) {
+        try {
+            authenticationService.resetPassword(
+                    passwordResetDto.getEmail(),
+                    passwordResetDto.getCode(),
+                    passwordResetDto.getNewPassword());
+            return ResponseEntity.ok("Password has been set successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/facebook")
+    public ResponseEntity<UserSignUpResponseDto> facebookAuth(@RequestBody FacebookUserDto facebookUserDto) {
+        if (!facebookService.validateFacebookToken(facebookUserDto.getAccessToken())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        FacebookUserDto validatedUser = facebookService.getFacebookUserInfo(facebookUserDto.getAccessToken());
+        if (validatedUser == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        UserSignUpResponseDto userSignUpResponseDto = authenticationService.signUpFacebookUser(validatedUser);
+        return ResponseEntity.ok(userSignUpResponseDto);
     }
 }

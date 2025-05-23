@@ -14,4 +14,8 @@ public interface AuthenticationService {
     void verifyUser(VerifyUserDto request);
 
     void resendVerificationCode(String email);
+
+    void sendPasswordResetEmail(String email);
+
+    void resetPassword(String email, String code, String newPassword);
 }

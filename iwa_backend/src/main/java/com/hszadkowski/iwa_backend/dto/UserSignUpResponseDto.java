@@ -12,5 +12,5 @@ public class UserSignUpResponseDto {
     private String email;
     private String phoneNum;
     private String role;
-    private String verificationCode;
+    private String verificationCode; // just for testing comfort, delete later
 }

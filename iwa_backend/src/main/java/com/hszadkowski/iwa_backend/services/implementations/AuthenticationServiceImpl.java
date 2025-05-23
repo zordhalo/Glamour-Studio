@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
+import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -70,30 +71,37 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .surname(lastName)
                 .email(facebookUser.getEmail())
                 .phoneNum(facebookUser.getPhoneNum() != null ? facebookUser.getPhoneNum() : "")
-                .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString())) // later send email to change the password
+                .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString())) // Generate random password
                 .role("USER")
                 .build();
 
-        user.setVerificationCode(generateVerificationCode());
-        user.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
-        user.setEnabled(false);
-        sendVerificationEmail(user); // later change to sendResetPasswordEmail(user) - add this function today
+        // Facebook users are automatically verified since they're authenticated through
+        // Facebook
+        user.setEnabled(true);
+
+        // Set password reset code
+        String resetCode = generateVerificationCode();
+        user.setPasswordResetCode(resetCode);
+        user.setPasswordResetCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
+
+        sendPasswordResetEmailToUser(user); // Send password reset email
 
         AppUser saved = userRepository.save(user);
         return new UserSignUpResponseDto(saved.getAppUserId(), saved.getName(), saved.getSurname(),
-                saved.getEmail(), saved.getPhoneNum(), saved.getRole(), saved.getVerificationCode());
-
+                saved.getEmail(), saved.getPhoneNum(), saved.getRole(), resetCode);
     }
 
     @Override
     public AppUser authenticate(LoginUserDto input) {
-        AppUser user = userRepository.findByEmail(input.getEmail()).orElseThrow(() -> new RuntimeException("User Not Found"));
+        AppUser user = userRepository.findByEmail(input.getEmail())
+                .orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        if(!user.isEnabled()) {
+        if (!user.isEnabled()) {
             throw new RuntimeException("Account not verified. Please verify your account");
 
         }
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(input.getEmail(), input.getPassword()));
+        authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(input.getEmail(), input.getPassword()));
 
         return user;
     }
@@ -101,7 +109,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public void verifyUser(VerifyUserDto input) {
         Optional<AppUser> optionalAppUser = userRepository.findByEmail(input.getEmail());
-        if(optionalAppUser.isPresent()) {
+        if (optionalAppUser.isPresent()) {
             AppUser appUser = optionalAppUser.get();
             if (appUser.getVerificationCodeExpiresAt().isBefore(LocalDateTime.now())) {
                 throw new RuntimeException("Verification code has expired");
@@ -122,7 +130,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public void resendVerificationCode(String email) {
         Optional<AppUser> optionalAppUser = userRepository.findByEmail(email);
-        if(optionalAppUser.isPresent()) {
+        if (optionalAppUser.isPresent()) {
             AppUser appUser = optionalAppUser.get();
             if (appUser.isEnabled()) {
                 throw new RuntimeException("Account is already verified");
@@ -131,6 +139,45 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             appUser.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
             sendVerificationEmail(appUser);
             userRepository.save(appUser);
+        } else {
+            throw new RuntimeException("User not found");
+        }
+    }
+
+    @Override
+    public void sendPasswordResetEmail(String email) {
+        Optional<AppUser> optionalAppUser = userRepository.findByEmail(email);
+        if (optionalAppUser.isPresent()) {
+            AppUser appUser = optionalAppUser.get();
+            String resetCode = generateVerificationCode();
+            appUser.setPasswordResetCode(resetCode);
+            appUser.setPasswordResetCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
+            sendPasswordResetEmailToUser(appUser);
+            userRepository.save(appUser);
+        } else {
+            throw new RuntimeException("User not found");
+        }
+    }
+
+    @Override
+    public void resetPassword(String email, String code, String newPassword) {
+        Optional<AppUser> optionalAppUser = userRepository.findByEmail(email);
+        if (optionalAppUser.isPresent()) {
+            AppUser appUser = optionalAppUser.get();
+            if (appUser.getPasswordResetCodeExpiresAt() == null ||
+                    appUser.getPasswordResetCodeExpiresAt().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("Reset code has expired");
+            }
+            if (appUser.getPasswordResetCode() != null &&
+                    appUser.getPasswordResetCode().equals(code)) {
+                appUser.setPasswordHash(passwordEncoder.encode(newPassword));
+                appUser.setPasswordResetCode(null);
+                appUser.setPasswordResetCodeExpiresAt(null);
+                appUser.setEnabled(true);
+                userRepository.save(appUser);
+            } else {
+                throw new RuntimeException("Invalid reset code");
+            }
         } else {
             throw new RuntimeException("User not found");
         }
@@ -160,8 +207,34 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
     }
 
-    private String generateVerificationCode() {
-        Random random = new Random();
+    private void sendPasswordResetEmailToUser(AppUser user) {
+        String subject = "Password Reset Request";
+        String resetCode = user.getPasswordResetCode();
+        String htmlMessage = "<html>"
+                + "<body style=\"font-family: Arial, sans-serif;\">"
+                + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
+                + "<h2 style=\"color: #333;\">Password Reset</h2>"
+                + "<p style=\"font-size: 16px;\">You have requested to reset your password. Please use the code below to set a new password for your account:</p>"
+                + "<div style=\"background-color: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1);\">"
+                + "<h3 style=\"color: #333;\">Reset Code:</h3>"
+                + "<p style=\"font-size: 18px; font-weight: bold; color: #007bff;\">" + resetCode + "</p>"
+                + "</div>"
+                + "<p style=\"font-size: 14px; margin-top: 20px;\">This code will expire in 15 minutes.</p>"
+                + "<p style=\"font-size: 14px;\">If you did not request this password reset, please ignore this email or contact support if you have concerns.</p>"
+                + "</div>"
+                + "</body>"
+                + "</html>";
+
+        try {
+            emailService.sendPasswordResetEmail(user.getEmail(), subject, htmlMessage);
+        } catch (MessagingException e) {
+            // Handle email sending exception
+            e.printStackTrace();
+        }
+    }
+
+    private String generateVerificationCode() { // think of a better way to generate the code, and clearer function name
+        SecureRandom random = new SecureRandom();
         int code = random.nextInt(900000) + 100000;
         return String.valueOf(code);
     }
