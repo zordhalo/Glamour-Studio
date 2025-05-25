@@ -99,19 +99,4 @@ public class AuthController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-    @PostMapping("/facebook")
-    public ResponseEntity<UserSignUpResponseDto> facebookAuth(@RequestBody FacebookUserDto facebookUserDto) {
-        if (!facebookService.validateFacebookToken(facebookUserDto.getAccessToken())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        FacebookUserDto validatedUser = facebookService.getFacebookUserInfo(facebookUserDto.getAccessToken());
-        if (validatedUser == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-
-        UserSignUpResponseDto userSignUpResponseDto = authenticationService.signUpFacebookUser(validatedUser);
-        return ResponseEntity.ok(userSignUpResponseDto);
-    }
 }

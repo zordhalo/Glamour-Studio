@@ -38,7 +38,7 @@ public class AppUser {
     private List<Appointment> appointments;
 
     @OneToMany(mappedBy = "appUser")
-    private List<AvailabilitySlot> availabilitySlots;
+    private List<AvailabilitySlot> availabilitySlots; // is it really necessary for user???, problem for later
 
     @OneToMany(mappedBy = "appUser")
     private List<Review> reviews;
