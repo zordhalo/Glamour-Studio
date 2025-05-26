@@ -5,6 +5,7 @@ import com.hszadkowski.iwa_backend.models.AppUser;
 import com.hszadkowski.iwa_backend.services.interfaces.AuthenticationService;
 import com.hszadkowski.iwa_backend.services.interfaces.FacebookService;
 import com.hszadkowski.iwa_backend.services.interfaces.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,8 @@ public class AuthController {
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
     private final FacebookService facebookService;
+
+    //in the future deactivate the previous jwt token if user generates another - is it needed?
 
     @PostMapping("/signup")
     public ResponseEntity<UserSignUpResponseDto> register(@RequestBody RegisterUserRequestDto registerUserDto) {
@@ -47,12 +50,15 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> authenticate(@RequestBody LoginUserDto loginUserDto) {
         AppUser authenticatedUser = authenticationService.authenticate(loginUserDto);
+
         UserDetails userDetails = User.builder()
                 .username(authenticatedUser.getEmail())
                 .password(authenticatedUser.getPasswordHash())
                 .authorities(List.of(new SimpleGrantedAuthority(authenticatedUser.getRole())))
                 .build();
+                
         String jwtToken = jwtService.generateToken(userDetails);
+
         LoginResponseDto loginResponse = new LoginResponseDto(jwtToken, jwtService.getExpirationTime());
         return ResponseEntity.ok(loginResponse);
     }
@@ -98,5 +104,27 @@ public class AuthController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @GetMapping("/debug")
+    public ResponseEntity<?> debugAuth(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        System.out.println("Authorization header: " + authHeader);
+        
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            System.out.println("Extracted token: " + token.substring(0, Math.min(50, token.length())) + "...");
+            
+            try {
+                String username = jwtService.extractUsername(token);
+                System.out.println("Extracted username: " + username);
+                return ResponseEntity.ok("Token valid for user: " + username);
+            } catch (Exception e) {
+                System.out.println("Token extraction error: " + e.getMessage());
+                return ResponseEntity.badRequest().body("Token error: " + e.getMessage());
+            }
+        }
+        
+        return ResponseEntity.badRequest().body("Authorization header: " + authHeader);
     }
 }

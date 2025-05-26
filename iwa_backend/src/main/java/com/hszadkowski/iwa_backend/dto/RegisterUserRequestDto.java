@@ -31,5 +31,5 @@ public class RegisterUserRequestDto {
     @NotBlank @Size(min = 8, max = 100)
     private String password;
 
-    private String role;
+    private String role; // passing role should be done differently to up the security
 }

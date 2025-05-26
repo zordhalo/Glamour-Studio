@@ -33,7 +33,7 @@ CREATE TABLE "public"."appointments" (
                                          "location" varchar NOT NULL,
                                          "scheduled_at" date NOT NULL,
                                          "description" text,
-                                         CONSTRAINT fk_appointments_user FOREIGN KEY ("app_user_id") REFERENCES "public"."users"("app_user_id"),
+                                         CONSTRAINT fk_appointments_user FOREIGN KEY ("app_user_id") REFERENCES "public"."app_users"("app_user_id"),
                                          CONSTRAINT fk_appointments_status FOREIGN KEY ("status_id") REFERENCES "public"."appointment_statuses"("status_id"),
                                          CONSTRAINT fk_appointments_service FOREIGN KEY ("service_id") REFERENCES "public"."services"("service_id")
 );
@@ -46,7 +46,7 @@ CREATE TABLE "public"."payments" (
                                      "status" varchar NOT NULL,
                                      "paid_at" date NOT NULL,
                                      CONSTRAINT fk_payments_appointment FOREIGN KEY ("appointment_id") REFERENCES "public"."appointments"("appointment_id"),
-                                     CONSTRAINT fk_payments_user FOREIGN KEY ("app_user_id") REFERENCES "public"."users"("app_user_id")
+                                     CONSTRAINT fk_payments_user FOREIGN KEY ("app_user_id") REFERENCES "public"."app_users"("app_user_id")
 );
 
 CREATE TABLE "public"."availability_slots" (
@@ -56,7 +56,7 @@ CREATE TABLE "public"."availability_slots" (
                                                "start_time" timestamp NOT NULL,
                                                "end_time" timestamp NOT NULL,
                                                "is_booked" boolean NOT NULL,
-                                               CONSTRAINT fk_slots_user FOREIGN KEY ("app_user_id") REFERENCES "public"."users"("app_user_id"),
+                                               CONSTRAINT fk_slots_user FOREIGN KEY ("app_user_id") REFERENCES "public"."app_users"("app_user_id"),
                                                CONSTRAINT fk_slots_service FOREIGN KEY ("service_id") REFERENCES "public"."services"("service_id")
 );
 
@@ -67,7 +67,7 @@ CREATE TABLE "public"."notifications" (
                                           "type" notification_type NOT NULL,
                                           "message" text NOT NULL,
                                           "sent_at" timestamp NOT NULL,
-                                          CONSTRAINT fk_notifications_user FOREIGN KEY ("app_user_id") REFERENCES "public"."users"("app_user_id"),
+                                          CONSTRAINT fk_notifications_user FOREIGN KEY ("app_user_id") REFERENCES "public"."app_users"("app_user_id"),
                                           CONSTRAINT fk_notifications_appointment FOREIGN KEY ("appointment_id") REFERENCES "public"."appointments"("appointment_id")
 );
 
@@ -79,7 +79,7 @@ CREATE TABLE "public"."reviews" (
                                     "comment" text NOT NULL,
                                     "created_at" timestamp NOT NULL,
                                     CONSTRAINT fk_reviews_appointment FOREIGN KEY ("appointment_id") REFERENCES "public"."appointments"("appointment_id"),
-                                    CONSTRAINT fk_reviews_user FOREIGN KEY ("app_user_id") REFERENCES "public"."users"("app_user_id")
+                                    CONSTRAINT fk_reviews_user FOREIGN KEY ("app_user_id") REFERENCES "public"."app_users"("app_user_id")
 );
 
 CREATE TABLE "public"."calendar_tokens" (
@@ -89,5 +89,5 @@ CREATE TABLE "public"."calendar_tokens" (
                                             "access_token" text NOT NULL,
                                             "refresh_token" text NOT NULL,
                                             "expires_at" timestamp NOT NULL,
-                                            CONSTRAINT fk_calendar_tokens_user FOREIGN KEY ("app_user_id") REFERENCES "public"."users"("app_user_id")
+                                            CONSTRAINT fk_calendar_tokens_user FOREIGN KEY ("app_user_id") REFERENCES "public"."app_users"("app_user_id")
 );

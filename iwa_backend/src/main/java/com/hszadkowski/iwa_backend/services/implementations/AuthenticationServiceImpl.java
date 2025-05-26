@@ -13,11 +13,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
-import java.security.SecureRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +34,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new UserAlreadyExistsException("Email '" + input.getEmail() + "' is already registered");
         }
 
-        String role = (input.getRole() != null && !input.getRole().isBlank()) ? input.getRole().trim() : "USER";
+        String role = (input.getRole() != null && !input.getRole().isBlank()) ? input.getRole().trim() : "ROLE_USER";
 
         AppUser user = AppUser.builder()
                 .name(input.getName())
@@ -72,7 +71,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .email(facebookUser.getEmail())
                 .phoneNum(facebookUser.getPhoneNum() != null ? facebookUser.getPhoneNum() : "")
                 .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString())) // Generate random password
-                .role("USER")
+                .role("ROLE_USER")
                 .build();
 
         // Facebook users are automatically verified since they're authenticated through

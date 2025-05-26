@@ -32,8 +32,10 @@ public class ServiceController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ServiceResponseDto> createService(@RequestBody @Valid CreateOrUpdateServiceDto serviceDto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(makeUpServicesService.createService(serviceDto));
+
+        ServiceResponseDto response = makeUpServicesService.createService(serviceDto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
@@ -49,6 +51,5 @@ public class ServiceController {
         makeUpServicesService.deleteService(id);
         return ResponseEntity.noContent().build();
     }
-
 }
 

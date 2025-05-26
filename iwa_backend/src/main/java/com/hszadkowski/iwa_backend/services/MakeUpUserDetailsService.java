@@ -25,7 +25,7 @@ public class MakeUpUserDetailsService implements UserDetailsService {
         AppUser appUser = userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User details not found for user: " + username));
 
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(appUser.getRole()));
-        return new User(appUser.getEmail(), appUser.getPasswordHash(), authorities);
 
+        return new User(appUser.getEmail(), appUser.getPasswordHash(), appUser.isEnabled(), true, true, true, authorities);
     }
 }
