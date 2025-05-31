@@ -14,9 +14,9 @@ public interface AvailabilityService {
 
     List<AvailabilitySlotResponseDto> getAllSlots();
 
-    void deleteSlot(Integer slotId, String adminEmail);
+    void deleteSlot(Integer slotId);
 
-    AvailabilitySlotResponseDto updateSlot(Integer slotId, CreateAvailabilitySlotDto dto, String adminEmail);
+    AvailabilitySlotResponseDto updateSlot(Integer slotId, CreateAvailabilitySlotDto dto);
 
     void markSlotAsBooked(Integer slotId);
 

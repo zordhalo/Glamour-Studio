@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "availability_slots")
@@ -27,7 +28,7 @@ public class AvailabilitySlot {
     @JoinColumn(name = "service_id")
     private Service service;
 
-    private LocalDate startTime;
-    private LocalDate endTime;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private Boolean isBooked;
 }
