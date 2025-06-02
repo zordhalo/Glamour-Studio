@@ -2,6 +2,7 @@ package com.hszadkowski.iwa_backend.controllers;
 
 import com.hszadkowski.iwa_backend.dto.AppointmentResponseDto;
 import com.hszadkowski.iwa_backend.dto.BookAppointmentDto;
+import com.hszadkowski.iwa_backend.dto.RescheduleAppointmentDto;
 import com.hszadkowski.iwa_backend.dto.UpdateAppointmentStatusDto;
 import com.hszadkowski.iwa_backend.services.interfaces.AppointmentService;
 import jakarta.validation.Valid;
@@ -48,6 +49,16 @@ public class AppointmentController {
     public ResponseEntity<List<AppointmentResponseDto>> getAllAppointments() {
         List<AppointmentResponseDto> appointments = appointmentService.getAllAppointments();
         return ResponseEntity.ok(appointments);
+    }
+
+    @PutMapping("/{id}/reschedule")
+    public ResponseEntity<AppointmentResponseDto> rescheduleAppointment(
+            @PathVariable Integer id,
+            @RequestBody @Valid RescheduleAppointmentDto rescheduleDto,
+            Authentication authentication) {
+        String userEmail = authentication.getName();
+        AppointmentResponseDto rescheduledAppointment = appointmentService.rescheduleAppointment(id, rescheduleDto, userEmail);
+        return ResponseEntity.ok(rescheduledAppointment);
     }
 
     @PutMapping("/{id}/cancel")

@@ -56,7 +56,6 @@ public class AuthController {
                 .password(authenticatedUser.getPasswordHash())
                 .authorities(List.of(new SimpleGrantedAuthority(authenticatedUser.getRole())))
                 .build();
-                
         String jwtToken = jwtService.generateToken(userDetails);
 
         LoginResponseDto loginResponse = new LoginResponseDto(jwtToken, jwtService.getExpirationTime());
@@ -110,11 +109,11 @@ public class AuthController {
     public ResponseEntity<?> debugAuth(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         System.out.println("Authorization header: " + authHeader);
-        
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             System.out.println("Extracted token: " + token.substring(0, Math.min(50, token.length())) + "...");
-            
+
             try {
                 String username = jwtService.extractUsername(token);
                 System.out.println("Extracted username: " + username);
@@ -124,7 +123,7 @@ public class AuthController {
                 return ResponseEntity.badRequest().body("Token error: " + e.getMessage());
             }
         }
-        
+
         return ResponseEntity.badRequest().body("Authorization header: " + authHeader);
     }
 }
