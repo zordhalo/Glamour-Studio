@@ -34,7 +34,6 @@ public class AppointmentReminderServiceImpl implements AppointmentReminderServic
 
         LocalDate tomorrow = LocalDate.now().plusDays(1);
 
-        // Get confirmed status
         AppointmentStatus confirmedStatus = appointmentStatusRepository.findByName("CONFIRMED")
                 .orElse(null);
 
