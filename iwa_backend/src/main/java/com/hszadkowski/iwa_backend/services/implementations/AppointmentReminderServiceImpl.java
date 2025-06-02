@@ -27,6 +27,7 @@ public class AppointmentReminderServiceImpl implements AppointmentReminderServic
     /**
      * Runs every day at 10:00 AM to send reminders for appointments scheduled for tomorrow
      */
+    @Override
     @Scheduled(cron = "0 0 10 * * *") // 10:00 AM daily
     public void sendDailyReminders() {
         log.info("Starting daily appointment reminder process...");
