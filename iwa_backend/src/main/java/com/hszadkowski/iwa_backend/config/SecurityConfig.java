@@ -62,6 +62,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/appointments").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/appointments/*/status").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/availability", "/availability/service/**", "/availability/*/check").permitAll()
                         .anyRequest().authenticated())
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
