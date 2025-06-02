@@ -43,3 +43,35 @@ INSERT INTO services (name, description, duration_min, price) VALUES
 ('Evening Makeup', 'Glamorous makeup for special occasions', 90, 80.00),
 ('Bridal Makeup', 'Complete bridal makeup package', 120, 150.00),
 ('Makeup Lesson', 'Learn to do your own makeup', 90, 70.00);
+
+-- Basic Makeup slots (service_id = 1)
+INSERT INTO availability_slots (app_user_id, service_id, start_time, end_time, is_booked) VALUES
+(1, 1, '2025-06-10 09:00:00', '2025-06-10 10:00:00', false),
+(1, 1, '2025-06-10 10:30:00', '2025-06-10 11:30:00', false),
+(1, 1, '2025-06-11 14:00:00', '2025-06-11 15:00:00', false),
+(1, 1, '2025-06-12 09:00:00', '2025-06-12 10:00:00', false);
+
+-- Evening Makeup slots (service_id = 2)
+INSERT INTO availability_slots (app_user_id, service_id, start_time, end_time, is_booked) VALUES
+(1, 2, '2025-06-10 16:00:00', '2025-06-10 17:30:00', false),
+(1, 2, '2025-06-11 17:00:00', '2025-06-11 18:30:00', false),
+(1, 2, '2025-06-13 16:00:00', '2025-06-13 17:30:00', false);
+
+-- Bridal Makeup slots (service_id = 3)
+INSERT INTO availability_slots (app_user_id, service_id, start_time, end_time, is_booked) VALUES
+(1, 3, '2025-06-15 08:00:00', '2025-06-15 10:00:00', false),
+(1, 3, '2025-06-16 09:00:00', '2025-06-16 11:00:00', false),
+(1, 3, '2025-06-20 08:00:00', '2025-06-20 10:00:00', false);
+
+-- Makeup Lesson slots (service_id = 4)
+INSERT INTO availability_slots (app_user_id, service_id, start_time, end_time, is_booked) VALUES
+(1, 4, '2025-06-10 13:00:00', '2025-06-10 14:30:00', false),
+(1, 4, '2025-06-12 15:00:00', '2025-06-12 16:30:00', false);
+
+-- Add one already booked slot for testing
+INSERT INTO availability_slots (app_user_id, service_id, start_time, end_time, is_booked) VALUES
+(1, 1, '2025-06-10 12:00:00', '2025-06-10 13:00:00', true);
+
+-- Add one slot in the past for testing (should not be bookable)
+INSERT INTO availability_slots (app_user_id, service_id, start_time, end_time, is_booked) VALUES
+(1, 1, '2025-05-01 09:00:00', '2025-05-01 10:00:00', false);

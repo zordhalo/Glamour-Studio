@@ -21,6 +21,10 @@ public class Appointment {
     private Integer appointmentId;
 
     @ManyToOne
+    @JoinColumn(name = "slot_id")
+    private AvailabilitySlot slot;
+
+    @ManyToOne
     @JoinColumn(name = "app_user_id")
     private AppUser appUser;
 

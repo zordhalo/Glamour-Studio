@@ -25,4 +25,6 @@ public interface AvailabilityService {
     boolean isSlotAvailable(Integer slotId);
 
     List<AvailabilitySlotResponseDto> getSlotsByService(Integer serviceId);
+
+    boolean canBookSlot(Integer slotId);
 }

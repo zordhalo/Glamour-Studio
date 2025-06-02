@@ -91,3 +91,7 @@ CREATE TABLE "public"."calendar_tokens" (
                                             "expires_at" timestamp NOT NULL,
                                             CONSTRAINT fk_calendar_tokens_user FOREIGN KEY ("app_user_id") REFERENCES "public"."app_users"("app_user_id")
 );
+
+ALTER TABLE appointments ADD COLUMN slot_id INTEGER;
+ALTER TABLE appointments ADD CONSTRAINT fk_appointments_slot
+    FOREIGN KEY (slot_id) REFERENCES availability_slots(slot_id);

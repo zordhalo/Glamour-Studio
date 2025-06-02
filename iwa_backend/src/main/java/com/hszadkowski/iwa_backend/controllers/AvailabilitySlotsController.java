@@ -86,4 +86,10 @@ public class AvailabilitySlotsController {
         availabilityService.deleteSlot(slotId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{slotId}/can-book")
+    public ResponseEntity<Boolean> canBookSlot(@PathVariable Integer slotId) {
+        boolean canBook = availabilityService.canBookSlot(slotId);
+        return ResponseEntity.ok(canBook);
+    }
 }

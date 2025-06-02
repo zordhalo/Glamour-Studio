@@ -67,6 +67,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         }
 
         return slots.stream()
+                .filter(slot -> !slot.getIsBooked() && slot.getStartTime().isAfter(LocalDateTime.now()))
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
@@ -159,6 +160,14 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public boolean canBookSlot(Integer slotId) {
+        return availabilitySlotRepository.findById(slotId)
+                .map(slot -> !slot.getIsBooked() && slot.getStartTime().isAfter(LocalDateTime.now()))
+                .orElse(false);
+    }
+
     // Helper methods
     private void validateSlotTimes(LocalDateTime startTime, LocalDateTime endTime) {
         if (startTime.isAfter(endTime) || startTime.isEqual(endTime)) {

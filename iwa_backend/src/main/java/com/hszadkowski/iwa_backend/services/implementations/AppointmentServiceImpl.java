@@ -4,16 +4,13 @@ import com.hszadkowski.iwa_backend.dto.AppointmentResponseDto;
 import com.hszadkowski.iwa_backend.dto.BookAppointmentDto;
 import com.hszadkowski.iwa_backend.dto.UpdateAppointmentStatusDto;
 import com.hszadkowski.iwa_backend.exceptions.AppointmentNotFoundException;
-import com.hszadkowski.iwa_backend.exceptions.ServiceDoesNotExistException;
-import com.hszadkowski.iwa_backend.models.AppUser;
-import com.hszadkowski.iwa_backend.models.Appointment;
-import com.hszadkowski.iwa_backend.models.AppointmentStatus;
-import com.hszadkowski.iwa_backend.models.Service;
+import com.hszadkowski.iwa_backend.models.*;
 import com.hszadkowski.iwa_backend.repos.AppointmentRepository;
 import com.hszadkowski.iwa_backend.repos.AppointmentStatusRepository;
-import com.hszadkowski.iwa_backend.repos.ServiceRepository;
+import com.hszadkowski.iwa_backend.repos.AvailabilitySlotRepository;
 import com.hszadkowski.iwa_backend.repos.UserRepository;
 import com.hszadkowski.iwa_backend.services.interfaces.AppointmentService;
+import com.hszadkowski.iwa_backend.services.interfaces.AvailabilityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,8 +25,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
     private final UserRepository userRepository;
-    private final ServiceRepository serviceRepository;
     private final AppointmentStatusRepository appointmentStatusRepository;
+    private final AvailabilitySlotRepository availabilitySlotRepository;
+    private final AvailabilityService availabilityService;
 
     @Override
     public AppointmentResponseDto bookAppointment(BookAppointmentDto request, String userEmail) {
@@ -37,11 +35,24 @@ public class AppointmentServiceImpl implements AppointmentService {
         AppUser user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found")); // maybe add custom exceptions for this in the future
 
-        Service service = serviceRepository.findById(request.getServiceId())
-                .orElseThrow(() -> new ServiceDoesNotExistException(
-                        "Service with ID " + request.getServiceId() + " not found"));
+        if (!availabilityService.canBookSlot(request.getSlotId())) {
+            throw new RuntimeException("This time slot is no longer available or has already passed");
+        }
 
-        AppointmentStatus status = appointmentStatusRepository.findByName("PENDING")
+        AvailabilitySlot slot = availabilitySlotRepository.findById(request.getSlotId())
+                .orElseThrow(() -> new RuntimeException("Availability slot not found"));
+
+        if (slot.getIsBooked()) {
+            throw new RuntimeException("This time slot is no longer available");
+        }
+
+        if (!slot.getService().getServiceId().equals(request.getServiceId())) {
+            throw new RuntimeException("Service mismatch with selected slot");
+        }
+
+        Service service = slot.getService();
+
+        AppointmentStatus status = appointmentStatusRepository.findByName("CONFIRMED")
                 .orElseThrow(() -> new RuntimeException("Default appointment status not found"));
 
         Appointment appointment = new Appointment();
@@ -49,8 +60,12 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setService(service);
         appointment.setStatus(status);
         appointment.setLocation(request.getLocation());
-        appointment.setScheduledAt(request.getScheduledAt());
+        appointment.setScheduledAt(slot.getStartTime().toLocalDate());
         appointment.setDescription(request.getDescription());
+        appointment.setSlot(slot);
+
+        slot.setIsBooked(true);
+        availabilitySlotRepository.save(slot);
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
         return mapToResponseDto(savedAppointment);
@@ -101,6 +116,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointment.setStatus(cancelledStatus);
         appointmentRepository.save(appointment);
+
+        releaseSlotForAppointment(appointment);
     }
 
     @Override
@@ -112,9 +129,23 @@ public class AppointmentServiceImpl implements AppointmentService {
         AppointmentStatus newStatus = appointmentStatusRepository.findByName(statusUpdate.getStatus().toUpperCase())
                 .orElseThrow(() -> new RuntimeException("Status '" + statusUpdate.getStatus() + "' not found"));
 
+        if ("CANCELLED".equalsIgnoreCase(statusUpdate.getStatus())) {
+            releaseSlotForAppointment(appointment);
+        }
+
         appointment.setStatus(newStatus);
         Appointment updatedAppointment = appointmentRepository.save(appointment);
         return mapToResponseDto(updatedAppointment);
+    }
+
+    // Helper methods
+
+    private void releaseSlotForAppointment(Appointment appointment) {
+        if (appointment.getSlot() != null) {
+            AvailabilitySlot slot = appointment.getSlot();
+            slot.setIsBooked(false);
+            availabilitySlotRepository.save(slot);
+        }
     }
 
     private AppointmentResponseDto mapToResponseDto(Appointment appointment) {
