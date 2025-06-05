@@ -1,0 +1,497 @@
+package com.hszadkowski.iwa_backend.services.implementations;
+
+import com.google.api.client.auth.oauth2.BearerToken;
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.DateTime;
+import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.model.CalendarList;
+import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.calendar.model.EventReminder;
+import com.google.api.services.oauth2.Oauth2;
+import com.google.api.services.oauth2.model.Userinfo;
+import com.hszadkowski.iwa_backend.dto.CalendarTokenResponseDto;
+import com.hszadkowski.iwa_backend.dto.GoogleCalendarEventDto;
+import com.hszadkowski.iwa_backend.models.AppUser;
+import com.hszadkowski.iwa_backend.models.Appointment;
+import com.hszadkowski.iwa_backend.models.CalendarEvent;
+import com.hszadkowski.iwa_backend.models.CalendarToken;
+import com.hszadkowski.iwa_backend.repos.CalendarEventRepository;
+import com.hszadkowski.iwa_backend.repos.CalendarTokenRepository;
+import com.hszadkowski.iwa_backend.repos.UserRepository;
+import com.hszadkowski.iwa_backend.services.interfaces.GoogleCalendarService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional
+public class GoogleCalendarServiceImpl implements GoogleCalendarService {
+
+    private static final String APPLICATION_NAME = "Makeup Appointment Booking";
+    private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
+    private static final String PROVIDER_GOOGLE = "google";
+
+    @Value("${google.calendar.client.id}")
+    private String clientId;
+
+    @Value("${google.calendar.client.secret}")
+    private String clientSecret;
+
+    @Value("${google.calendar.redirect.uri}")
+    private String redirectUri;
+
+    private final UserRepository userRepository;
+    private final CalendarTokenRepository calendarTokenRepository;
+    private final CalendarEventRepository calendarEventRepository;
+
+    @Override
+    public String getAuthorizationUrl(String userEmail) {
+        try {
+            GoogleAuthorizationCodeFlow flow = createFlow();
+            return flow.newAuthorizationUrl()
+                    .setRedirectUri(redirectUri)
+                    .setState(userEmail) // Pass user email as state
+                    .build();
+        } catch (Exception e) {
+            log.error("Error creating authorization URL: ", e);
+            throw new RuntimeException("Failed to create authorization URL", e);
+        }
+    }
+
+    @Override
+    public CalendarTokenResponseDto handleOAuthCallback(String authCode, String userEmail)
+            throws IOException, GeneralSecurityException {
+
+        AppUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        GoogleAuthorizationCodeFlow flow = createFlow();
+        GoogleTokenResponse tokenResponse = flow.newTokenRequest(authCode)
+                .setRedirectUri(redirectUri)
+                .execute();
+
+        // Get user info to store email
+        Credential credential = flow.createAndStoreCredential(tokenResponse, userEmail);
+
+        // Get the user's actual Google email using OAuth2 API
+        String googleEmail;
+        try {
+            Oauth2 oauth2 = new Oauth2.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(),
+                    JSON_FACTORY,
+                    credential)
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+
+            Userinfo userinfo = oauth2.userinfo().get().execute();
+            googleEmail = userinfo.getEmail();
+
+            log.info("Retrieved Google email: {} for user: {}", googleEmail, userEmail);
+        } catch (Exception e) {
+            log.warn("Could not retrieve Google email via OAuth2 API, using provided email", e);
+            googleEmail = userEmail; // Fallback to provided email
+        }
+
+        // Delete existing token if any
+        calendarTokenRepository.findByAppUserAndProvider(user, PROVIDER_GOOGLE)
+                .ifPresent(calendarTokenRepository::delete);
+
+        // Save new token
+        CalendarToken token = new CalendarToken();
+        token.setAppUser(user);
+        token.setProvider(PROVIDER_GOOGLE);
+        token.setAccessToken(tokenResponse.getAccessToken());
+        token.setRefreshToken(tokenResponse.getRefreshToken());
+        token.setExpiresAt(LocalDateTime.now().plusSeconds(tokenResponse.getExpiresInSeconds()));
+        token.setEmail(googleEmail); // Store the actual Google email
+
+        CalendarToken savedToken = calendarTokenRepository.save(token);
+
+        return new CalendarTokenResponseDto(
+                true,
+                PROVIDER_GOOGLE,
+                savedToken.getExpiresAt(),
+                savedToken.getEmail()
+        );
+    }
+
+    @Override
+    public GoogleCalendarEventDto createCalendarEvent(Appointment appointment, String userEmail)
+            throws IOException, GeneralSecurityException {
+
+        Calendar calendarService = getCalendarService(userEmail);
+        AppUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Event event = new Event()
+                .setSummary(appointment.getService().getName() + " Appointment")
+                .setDescription(buildEventDescription(appointment));
+
+        // Set location
+        if (appointment.getLocation() != null) {
+            event.setLocation(appointment.getLocation());
+        }
+
+        // Set time
+        DateTime startDateTime = new DateTime(
+                appointment.getSlot().getStartTime()
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+        );
+        DateTime endDateTime = new DateTime(
+                appointment.getSlot().getEndTime()
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+        );
+
+        EventDateTime start = new EventDateTime()
+                .setDateTime(startDateTime)
+                .setTimeZone(ZoneId.systemDefault().getId());
+        event.setStart(start);
+
+        EventDateTime end = new EventDateTime()
+                .setDateTime(endDateTime)
+                .setTimeZone(ZoneId.systemDefault().getId());
+        event.setEnd(end);
+
+        // Set reminder
+        EventReminder[] reminderOverrides = new EventReminder[] {
+                new EventReminder().setMethod("email").setMinutes(24 * 60), // 1 day before
+                new EventReminder().setMethod("popup").setMinutes(60), // 1 hour before
+        };
+        Event.Reminders reminders = new Event.Reminders()
+                .setUseDefault(false)
+                .setOverrides(List.of(reminderOverrides));
+        event.setReminders(reminders);
+
+        // Create the event
+        String calendarId = "primary"; // Use primary calendar
+        Event createdEvent = calendarService.events().insert(calendarId, event).execute();
+
+        // Save calendar event record
+        CalendarEvent calendarEvent = new CalendarEvent();
+        calendarEvent.setAppointment(appointment);
+        calendarEvent.setAppUser(user);
+        calendarEvent.setProvider(PROVIDER_GOOGLE);
+        calendarEvent.setExternalEventId(createdEvent.getId());
+        calendarEvent.setCalendarId(calendarId);
+        calendarEvent.setSynced(true);
+
+        calendarEventRepository.save(calendarEvent);
+
+        return mapToEventDto(createdEvent, calendarId);
+    }
+
+    @Override
+    public GoogleCalendarEventDto updateCalendarEvent(Appointment appointment, String userEmail)
+            throws IOException, GeneralSecurityException {
+
+        Optional<CalendarEvent> calendarEventOpt = calendarEventRepository
+                .findByAppointmentAndProvider(appointment, PROVIDER_GOOGLE);
+
+        if (calendarEventOpt.isEmpty()) {
+            // If no calendar event exists, create one
+            return createCalendarEvent(appointment, userEmail);
+        }
+
+        CalendarEvent calendarEvent = calendarEventOpt.get();
+        Calendar calendarService = getCalendarService(userEmail);
+
+        // Get the existing event
+        Event existingEvent = calendarService.events()
+                .get(calendarEvent.getCalendarId(), calendarEvent.getExternalEventId())
+                .execute();
+
+        // Update event details
+        existingEvent.setSummary(appointment.getService().getName() + " Appointment")
+                .setDescription(buildEventDescription(appointment))
+                .setLocation(appointment.getLocation());
+
+        // Update time
+        DateTime startDateTime = new DateTime(
+                appointment.getSlot().getStartTime()
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+        );
+        DateTime endDateTime = new DateTime(
+                appointment.getSlot().getEndTime()
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli()
+        );
+
+        EventDateTime start = new EventDateTime()
+                .setDateTime(startDateTime)
+                .setTimeZone(ZoneId.systemDefault().getId());
+        existingEvent.setStart(start);
+
+        EventDateTime end = new EventDateTime()
+                .setDateTime(endDateTime)
+                .setTimeZone(ZoneId.systemDefault().getId());
+        existingEvent.setEnd(end);
+
+        // Update the event
+        Event updatedEvent = calendarService.events()
+                .update(calendarEvent.getCalendarId(), calendarEvent.getExternalEventId(), existingEvent)
+                .execute();
+
+        return mapToEventDto(updatedEvent, calendarEvent.getCalendarId());
+    }
+
+    @Override
+    public void deleteCalendarEvent(Appointment appointment, String userEmail)
+            throws IOException, GeneralSecurityException {
+
+        Optional<CalendarEvent> calendarEventOpt = calendarEventRepository
+                .findByAppointmentAndProvider(appointment, PROVIDER_GOOGLE);
+
+        if (calendarEventOpt.isEmpty()) {
+            log.warn("No calendar event found for appointment {}", appointment.getAppointmentId());
+            return;
+        }
+
+        CalendarEvent calendarEvent = calendarEventOpt.get();
+        Calendar calendarService = getCalendarService(userEmail);
+
+        try {
+            // Delete from Google Calendar
+            calendarService.events()
+                    .delete(calendarEvent.getCalendarId(), calendarEvent.getExternalEventId())
+                    .execute();
+        } catch (Exception e) {
+            log.warn("Failed to delete event from Google Calendar: {}", e.getMessage());
+        }
+
+        // Delete from our database
+        calendarEventRepository.delete(calendarEvent);
+    }
+
+    @Override
+    public List<GoogleCalendarEventDto> getUserCalendars(String userEmail)
+            throws IOException, GeneralSecurityException {
+
+        Calendar calendarService = getCalendarService(userEmail);
+
+        CalendarList calendarList = calendarService.calendarList().list().execute();
+
+        return calendarList.getItems().stream()
+                .map(calendar -> new GoogleCalendarEventDto(
+                        calendar.getId(),
+                        calendar.getSummary(),
+                        calendar.getDescription(),
+                        null, // location not applicable for calendar list
+                        null, // start time not applicable
+                        null, // end time not applicable
+                        calendar.getId(),
+                        "active"
+                ))
+                .toList();
+    }
+
+    @Override
+    public boolean isUserConnectedToGoogleCalendar(String userEmail) {
+        AppUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Optional<CalendarToken> tokenOpt = calendarTokenRepository
+                .findByAppUserAndProvider(user, PROVIDER_GOOGLE);
+
+        return tokenOpt.isPresent() && tokenOpt.get().getExpiresAt().isAfter(LocalDateTime.now());
+    }
+
+    @Override
+    public void disconnectGoogleCalendar(String userEmail) {
+        AppUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        calendarTokenRepository.deleteByAppUserAndProvider(user, PROVIDER_GOOGLE);
+
+        // Also delete all calendar events for this user
+        List<CalendarEvent> events = calendarEventRepository.findByAppUserAndProvider(user, PROVIDER_GOOGLE);
+        calendarEventRepository.deleteAll(events);
+    }
+
+    @Override
+    public void refreshAccessTokenIfNeeded(String userEmail) throws IOException, GeneralSecurityException {
+        AppUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Optional<CalendarToken> tokenOpt = calendarTokenRepository
+                .findByAppUserAndProvider(user, PROVIDER_GOOGLE);
+
+        if (tokenOpt.isEmpty()) {
+            throw new RuntimeException("No Google Calendar token found for user");
+        }
+
+        CalendarToken token = tokenOpt.get();
+
+        // Check if token is expired or expires soon (within 5 minutes)
+        if (token.getExpiresAt().isBefore(LocalDateTime.now().plusMinutes(5))) {
+            GoogleAuthorizationCodeFlow flow = createFlow();
+
+            try {
+                GoogleTokenResponse tokenResponse = flow.newTokenRequest(token.getRefreshToken())
+                        .setGrantType("refresh_token")
+                        .execute();
+
+                // Update token
+                token.setAccessToken(tokenResponse.getAccessToken());
+                token.setExpiresAt(LocalDateTime.now().plusSeconds(tokenResponse.getExpiresInSeconds()));
+
+                if (tokenResponse.getRefreshToken() != null) {
+                    token.setRefreshToken(tokenResponse.getRefreshToken());
+                }
+
+                calendarTokenRepository.save(token);
+
+            } catch (Exception e) {
+                log.error("Failed to refresh Google Calendar token for user {}: {}", userEmail, e.getMessage());
+                // Delete invalid token
+                calendarTokenRepository.delete(token);
+                throw new RuntimeException("Failed to refresh Google Calendar token", e);
+            }
+        }
+    }
+
+    @Override
+    public CalendarTokenResponseDto getCalendarConnectionStatus(String userEmail) {
+        AppUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Optional<CalendarToken> tokenOpt = calendarTokenRepository
+                .findByAppUserAndProvider(user, PROVIDER_GOOGLE);
+
+        if (tokenOpt.isEmpty()) {
+            return new CalendarTokenResponseDto(false, null, null, null);
+        }
+
+        CalendarToken token = tokenOpt.get();
+        boolean isValid = token.getExpiresAt().isAfter(LocalDateTime.now());
+
+        return new CalendarTokenResponseDto(
+                isValid,
+                token.getProvider(),
+                token.getExpiresAt(),
+                token.getEmail()
+        );
+    }
+
+    // Helper methods
+    private GoogleAuthorizationCodeFlow createFlow() throws IOException, GeneralSecurityException {
+        GoogleClientSecrets clientSecrets = new GoogleClientSecrets()
+                .setInstalled(new GoogleClientSecrets.Details()
+                        .setClientId(clientId)
+                        .setClientSecret(clientSecret));
+
+        return new GoogleAuthorizationCodeFlow.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                JSON_FACTORY,
+                clientSecrets,
+                Arrays.asList(
+                        CalendarScopes.CALENDAR,
+                        "https://www.googleapis.com/auth/userinfo.email"
+                ))
+                .setAccessType("offline")
+                .setApprovalPrompt("force")
+                .build();
+    }
+
+    private Calendar getCalendarService(String userEmail) throws IOException, GeneralSecurityException {
+        AppUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        CalendarToken token = calendarTokenRepository.findByAppUserAndProvider(user, PROVIDER_GOOGLE)
+                .orElseThrow(() -> new RuntimeException("No Google Calendar token found"));
+
+        // Refresh token if needed
+        refreshAccessTokenIfNeeded(userEmail);
+
+        // Reload token after potential refresh
+        token = calendarTokenRepository.findByAppUserAndProvider(user, PROVIDER_GOOGLE)
+                .orElseThrow(() -> new RuntimeException("No Google Calendar token found"));
+
+        NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+
+        // Create credential using the stored tokens
+        Credential credential = new Credential(BearerToken.authorizationHeaderAccessMethod())
+                .setAccessToken(token.getAccessToken())
+                .setRefreshToken(token.getRefreshToken());
+
+        return new Calendar.Builder(
+                httpTransport,
+                JSON_FACTORY,
+                credential)
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+    }
+
+    private String buildEventDescription(Appointment appointment) {
+        StringBuilder description = new StringBuilder();
+        description.append("Makeup Appointment Details:\n\n");
+        description.append("Service: ").append(appointment.getService().getName()).append("\n");
+        description.append("Duration: ").append(appointment.getService().getDurationMin()).append(" minutes\n");
+        description.append("Price: $").append(appointment.getService().getPrice()).append("\n");
+
+        if (appointment.getDescription() != null && !appointment.getDescription().trim().isEmpty()) {
+            description.append("Notes: ").append(appointment.getDescription()).append("\n");
+        }
+
+        description.append("\nStatus: ").append(appointment.getStatus().getName());
+
+        return description.toString();
+    }
+
+    private GoogleCalendarEventDto mapToEventDto(Event event, String calendarId) {
+        LocalDateTime startTime = null;
+        LocalDateTime endTime = null;
+
+        if (event.getStart() != null && event.getStart().getDateTime() != null) {
+            startTime = LocalDateTime.ofInstant(
+                    java.time.Instant.ofEpochMilli(event.getStart().getDateTime().getValue()),
+                    ZoneId.systemDefault()
+            );
+        }
+
+        if (event.getEnd() != null && event.getEnd().getDateTime() != null) {
+            endTime = LocalDateTime.ofInstant(
+                    java.time.Instant.ofEpochMilli(event.getEnd().getDateTime().getValue()),
+                    ZoneId.systemDefault()
+            );
+        }
+
+        return new GoogleCalendarEventDto(
+                event.getId(),
+                event.getSummary(),
+                event.getDescription(),
+                event.getLocation(),
+                startTime,
+                endTime,
+                calendarId,
+                event.getStatus()
+        );
+    }
+}

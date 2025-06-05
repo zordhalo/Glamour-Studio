@@ -89,7 +89,20 @@ CREATE TABLE "public"."calendar_tokens" (
                                             "access_token" text NOT NULL,
                                             "refresh_token" text NOT NULL,
                                             "expires_at" timestamp NOT NULL,
+                                            "email" varchar,
                                             CONSTRAINT fk_calendar_tokens_user FOREIGN KEY ("app_user_id") REFERENCES "public"."app_users"("app_user_id")
+);
+
+CREATE TABLE "public"."calendar_events" (
+                                            "calendar_event_id" SERIAL PRIMARY KEY,
+                                            "appointment_id" integer NOT NULL,
+                                            "app_user_id" integer NOT NULL,
+                                            "provider" varchar NOT NULL,
+                                            "external_event_id" varchar NOT NULL,
+                                            "calendar_id" varchar NOT NULL,
+                                            "synced" boolean NOT NULL DEFAULT true,
+                                            CONSTRAINT fk_calendar_events_appointment FOREIGN KEY ("appointment_id") REFERENCES "public"."appointments"("appointment_id"),
+                                            CONSTRAINT fk_calendar_events_user FOREIGN KEY ("app_user_id") REFERENCES "public"."app_users"("app_user_id")
 );
 
 ALTER TABLE appointments ADD COLUMN slot_id INTEGER;
