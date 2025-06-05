@@ -17,7 +17,7 @@ public class CalendarEvent {
     @Column(name = "calendar_event_id")
     private Integer calendarEventId;
 
-    @OneToOne
+    @ManyToOne // for future enhancement with other calendar providers
     @JoinColumn(name = "appointment_id")
     private Appointment appointment;
 

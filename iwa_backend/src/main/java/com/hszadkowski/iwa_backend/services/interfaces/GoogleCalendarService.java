@@ -30,4 +30,8 @@ public interface GoogleCalendarService {
     void refreshAccessTokenIfNeeded(String userEmail) throws IOException, GeneralSecurityException;
 
     CalendarTokenResponseDto getCalendarConnectionStatus(String userEmail);
+
+    boolean isAppointmentSynced(Integer appointmentId, String userEmail);
+
+    int syncExistingAppointments(String userEmail);
 }

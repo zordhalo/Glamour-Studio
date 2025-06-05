@@ -24,6 +24,7 @@ import com.hszadkowski.iwa_backend.models.AppUser;
 import com.hszadkowski.iwa_backend.models.Appointment;
 import com.hszadkowski.iwa_backend.models.CalendarEvent;
 import com.hszadkowski.iwa_backend.models.CalendarToken;
+import com.hszadkowski.iwa_backend.repos.AppointmentRepository;
 import com.hszadkowski.iwa_backend.repos.CalendarEventRepository;
 import com.hszadkowski.iwa_backend.repos.CalendarTokenRepository;
 import com.hszadkowski.iwa_backend.repos.UserRepository;
@@ -36,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
@@ -64,6 +66,7 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     private final UserRepository userRepository;
     private final CalendarTokenRepository calendarTokenRepository;
     private final CalendarEventRepository calendarEventRepository;
+    private final AppointmentRepository appointmentRepository;
 
     @Override
     public String getAuthorizationUrl(String userEmail) {
@@ -398,6 +401,91 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                 token.getExpiresAt(),
                 token.getEmail()
         );
+    }
+
+    @Override
+    public boolean isAppointmentSynced(Integer appointmentId, String userEmail) {
+        try {
+            // First check if user is connected to Google Calendar
+            if (!isUserConnectedToGoogleCalendar(userEmail)) {
+                return false;
+            }
+
+            // Find the appointment
+            Appointment appointment = appointmentRepository.findById(appointmentId)
+                    .orElse(null);
+
+            if (appointment == null) {
+                return false;
+            }
+
+            // Check if the appointment belongs to this user
+            if (!appointment.getAppUser().getEmail().equals(userEmail)) {
+                return false;
+            }
+
+            // Check if there's a calendar event record for this appointment
+            return calendarEventRepository
+                    .findByAppointmentAndProvider(appointment, PROVIDER_GOOGLE)
+                    .isPresent();
+
+        } catch (Exception e) {
+            log.error("Error checking appointment sync status: ", e);
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public int syncExistingAppointments(String userEmail) {
+        int syncedCount = 0;
+
+        try {
+            // Verify user is connected to Google Calendar
+            if (!isUserConnectedToGoogleCalendar(userEmail)) {
+                throw new RuntimeException("User is not connected to Google Calendar");
+            }
+
+            AppUser user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Get all future appointments for this user that are not cancelled
+            // Note: You'll need to inject AppointmentRepository
+            List<Appointment> futureAppointments = appointmentRepository
+                    .findByAppUserAndScheduledAtAfterAndStatusNameNot(
+                            user,
+                            LocalDate.now(),
+                            "CANCELLED"
+                    );
+
+            // For each appointment, check if it's already synced
+            for (Appointment appointment : futureAppointments) {
+                try {
+                    // Check if this appointment is already synced
+                    boolean alreadySynced = calendarEventRepository
+                            .findByAppointmentAndProvider(appointment, PROVIDER_GOOGLE)
+                            .isPresent();
+
+                    if (!alreadySynced && appointment.getSlot() != null) {
+                        // Create calendar event for this appointment
+                        createCalendarEvent(appointment, userEmail);
+                        syncedCount++;
+                        log.info("Synced appointment {} to Google Calendar", appointment.getAppointmentId());
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to sync appointment {}: {}",
+                            appointment.getAppointmentId(), e.getMessage());
+                    // Continue with next appointment
+                }
+            }
+
+            log.info("Successfully synced {} appointments for user {}", syncedCount, userEmail);
+            return syncedCount;
+
+        } catch (Exception e) {
+            log.error("Error syncing existing appointments for user {}: ", userEmail, e);
+            throw new RuntimeException("Failed to sync existing appointments", e);
+        }
     }
 
     // Helper methods

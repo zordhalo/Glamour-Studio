@@ -19,7 +19,7 @@ public class CalendarToken {
     @Column(name = "token_id")
     private Integer tokenId;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "app_user_id")
     private AppUser appUser;
 

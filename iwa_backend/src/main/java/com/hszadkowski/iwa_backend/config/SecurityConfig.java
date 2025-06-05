@@ -121,7 +121,7 @@ public class SecurityConfig {
     ClientRegistrationRepository clientRegistrationRepository() {
         ClientRegistration google = googleClientRegistration();
         ClientRegistration facebook = facebookClientRegistration();
-        return new InMemoryClientRegistrationRepository(facebook);
+        return new InMemoryClientRegistrationRepository(facebook, google);
     }
 
    private ClientRegistration googleClientRegistration() {
