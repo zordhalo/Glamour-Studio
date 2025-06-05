@@ -65,6 +65,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all OPTIONS requests for CORS preflight
                         .requestMatchers("/h2-console/**", "/register", "/register/facebook", "/api/auth/facebook",
+                                "/auth/signup/google", "/auth/login/google", "/auth/oauth/authenticate",
                                 "/user-already-exist", "/invalidSession", "/auth/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/services", "/services/**")
@@ -78,8 +79,7 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(Customizer.withDefaults())
-                .formLogin(Customizer.withDefaults())
-                .oauth2Login(Customizer.withDefaults());
+                .oauth2Login(Customizer.withDefaults()); // to be deleted later
         return http.build();
     }
 

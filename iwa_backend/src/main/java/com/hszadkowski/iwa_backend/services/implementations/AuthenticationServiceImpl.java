@@ -83,7 +83,36 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setPasswordResetCode(resetCode);
         user.setPasswordResetCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
 
-        sendPasswordResetEmailToUser(user); // Send password reset email
+        sendPasswordResetEmailToUser(user);
+
+        AppUser saved = userRepository.save(user);
+        return new UserSignUpResponseDto(saved.getAppUserId(), saved.getName(), saved.getSurname(),
+                saved.getEmail(), saved.getPhoneNum(), saved.getRole(), resetCode);
+    }
+
+    @Override
+    public UserSignUpResponseDto signUpGoogleUser(GoogleUserDto googleUser) {
+        if (userRepository.existsByEmail(googleUser.getEmail())) {
+            throw new UserAlreadyExistsException("Email '" + googleUser.getEmail() + "' is already registered");
+        }
+
+        AppUser user = AppUser.builder()
+                .name(googleUser.getGivenName() != null ? googleUser.getGivenName() : googleUser.getName())
+                .surname(googleUser.getFamilyName() != null ? googleUser.getFamilyName() : "")
+                .email(googleUser.getEmail())
+                .phoneNum("") // Google does not provide phone number, later allow user to change their account details
+                .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
+                .role("ROLE_USER")
+                .build();
+
+        // Google users are automatically verified since they're authenticated through Google
+        user.setEnabled(true);
+
+        String resetCode = generateVerificationCode();
+        user.setPasswordResetCode(resetCode);
+        user.setPasswordResetCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
+
+        sendPasswordResetEmailToUser(user);
 
         AppUser saved = userRepository.save(user);
         return new UserSignUpResponseDto(saved.getAppUserId(), saved.getName(), saved.getSurname(),

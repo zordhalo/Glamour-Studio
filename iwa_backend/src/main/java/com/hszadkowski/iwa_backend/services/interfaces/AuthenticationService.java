@@ -9,6 +9,8 @@ public interface AuthenticationService {
 
     UserSignUpResponseDto signUp(RegisterUserRequestDto request);
 
+    UserSignUpResponseDto signUpGoogleUser(GoogleUserDto googleUser);
+
     AppUser authenticate(LoginUserDto request);
 
     void verifyUser(VerifyUserDto request);
@@ -18,4 +20,5 @@ public interface AuthenticationService {
     void sendPasswordResetEmail(String email);
 
     void resetPassword(String email, String code, String newPassword);
+
 }
