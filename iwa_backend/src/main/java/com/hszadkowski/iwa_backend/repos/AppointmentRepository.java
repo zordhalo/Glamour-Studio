@@ -16,4 +16,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
     List<Appointment> findByScheduledAtAndStatus(LocalDate scheduledAt, AppointmentStatus status);
 
     List<Appointment> findByScheduledAt(LocalDate scheduledAt);
+
+    List<Appointment> findByAppUserAndScheduledAtAfterAndStatusNameNot(
+            AppUser user,
+            LocalDate date,
+            String statusName
+    );
 }

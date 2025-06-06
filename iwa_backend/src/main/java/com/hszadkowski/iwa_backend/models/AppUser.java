@@ -38,7 +38,7 @@ public class AppUser {
     private List<Appointment> appointments;
 
     @OneToMany(mappedBy = "appUser")
-    private List<AvailabilitySlot> availabilitySlots; // is it really necessary for user???, problem for later
+    private List<AvailabilitySlot> availabilitySlots;
 
     @OneToMany(mappedBy = "appUser")
     private List<Review> reviews;
@@ -49,6 +49,9 @@ public class AppUser {
     @OneToMany(mappedBy = "appUser")
     private List<Notification> notifications;
 
-    @OneToOne(mappedBy = "appUser")
-    private CalendarToken calendarToken;
+    @OneToMany(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CalendarToken> calendarTokens;
+
+    @OneToMany(mappedBy = "appUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CalendarEvent> calendarEvents;
 }

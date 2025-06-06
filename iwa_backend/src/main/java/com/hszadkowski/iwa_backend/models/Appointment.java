@@ -48,4 +48,7 @@ public class Appointment {
 
     @OneToMany(mappedBy = "appointment")
     private List<Notification> notifications;
+
+    @OneToMany(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CalendarEvent> calendarEvents;
 }

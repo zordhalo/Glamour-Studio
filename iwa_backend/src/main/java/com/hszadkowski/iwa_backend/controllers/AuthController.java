@@ -2,8 +2,10 @@ package com.hszadkowski.iwa_backend.controllers;
 
 import com.hszadkowski.iwa_backend.dto.*;
 import com.hszadkowski.iwa_backend.models.AppUser;
+import com.hszadkowski.iwa_backend.repos.UserRepository;
 import com.hszadkowski.iwa_backend.services.interfaces.AuthenticationService;
 import com.hszadkowski.iwa_backend.services.interfaces.FacebookService;
+import com.hszadkowski.iwa_backend.services.interfaces.GoogleAuthService;
 import com.hszadkowski.iwa_backend.services.interfaces.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -23,6 +26,8 @@ public class AuthController {
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
     private final FacebookService facebookService;
+    private final GoogleAuthService googleAuthService;
+    public final UserRepository userRepository;
 
     //in the future deactivate the previous jwt token if user generates another - is it needed?
 
@@ -47,6 +52,21 @@ public class AuthController {
 
     }
 
+    @PostMapping("/signup/google")
+    public ResponseEntity<UserSignUpResponseDto> registerWithGoogle(@RequestBody GoogleUserDto googleUser) {
+        if (!googleAuthService.validateGoogleToken(googleUser.getAccessToken())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        GoogleUserDto validatedGoogleUser = googleAuthService.getGoogleUserInfo(googleUser.getAccessToken());
+        if (validatedGoogleUser == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        UserSignUpResponseDto registeredGoogleUser = authenticationService.signUpGoogleUser(validatedGoogleUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(registeredGoogleUser);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> authenticate(@RequestBody LoginUserDto loginUserDto) {
         AppUser authenticatedUser = authenticationService.authenticate(loginUserDto);
@@ -59,6 +79,64 @@ public class AuthController {
         String jwtToken = jwtService.generateToken(userDetails);
 
         LoginResponseDto loginResponse = new LoginResponseDto(jwtToken, jwtService.getExpirationTime());
+        return ResponseEntity.ok(loginResponse);
+    }
+
+    @PostMapping("/oauth/authenticate")
+    public ResponseEntity<LoginResponseDto> authenticateWithOAuth(@RequestBody OAuthAuthenticationDto oauthDto) { // TODO: in the future transfer the business logic in this endpoint to a service
+        String email = null;
+        boolean isValid = false;
+
+        switch (oauthDto.getProvider().toLowerCase()) {
+            case "facebook":
+                if (!facebookService.validateFacebookToken(oauthDto.getAccessToken())) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
+                FacebookUserDto fbUser = facebookService.getFacebookUserInfo(oauthDto.getAccessToken());
+                if (fbUser != null) {
+                    email = fbUser.getEmail();
+                    isValid = true;
+                }
+                break;
+
+            case "google":
+                if (!googleAuthService.validateGoogleToken(oauthDto.getAccessToken())) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
+                GoogleUserDto googleUser = googleAuthService.getGoogleUserInfo(oauthDto.getAccessToken());
+                if (googleUser != null) {
+                    email = googleUser.getEmail();
+                    isValid = true;
+                }
+                break;
+
+            default:
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new LoginResponseDto("Invalid provider", 0));
+        }
+
+        if (!isValid || email == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        Optional<AppUser> existingUser = userRepository.findByEmail(email);
+
+        if (existingUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new LoginResponseDto("User not found. Please sign up first.", 0));
+        }
+
+        AppUser user = existingUser.get();
+
+        UserDetails userDetails = User.builder()
+                .username(user.getEmail())
+                .password(user.getPasswordHash())
+                .authorities(List.of(new SimpleGrantedAuthority(user.getRole())))
+                .build();
+
+        String jwtToken = jwtService.generateToken(userDetails);
+        LoginResponseDto loginResponse = new LoginResponseDto(jwtToken, jwtService.getExpirationTime());
+
         return ResponseEntity.ok(loginResponse);
     }
 

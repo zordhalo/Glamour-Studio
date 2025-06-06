@@ -13,7 +13,9 @@ import com.hszadkowski.iwa_backend.repos.UserRepository;
 import com.hszadkowski.iwa_backend.services.interfaces.AppointmentService;
 import com.hszadkowski.iwa_backend.services.interfaces.AvailabilityService;
 import com.hszadkowski.iwa_backend.services.interfaces.EmailService;
+import com.hszadkowski.iwa_backend.services.interfaces.GoogleCalendarService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
@@ -31,12 +34,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AvailabilitySlotRepository availabilitySlotRepository;
     private final AvailabilityService availabilityService;
     private final EmailService emailService;
+    private final GoogleCalendarService googleCalendarService;
 
     @Override
     public AppointmentResponseDto bookAppointment(BookAppointmentDto request, String userEmail) {
 
         AppUser user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found")); // maybe add custom exceptions for this in the future
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!availabilityService.canBookSlot(request.getSlotId())) {
             throw new RuntimeException("This time slot is no longer available or has already passed");
@@ -72,11 +76,16 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
+        // Send confirmation email
         sendBookingConfirmationEmail(savedAppointment);
+
+        // Sync to Google Calendar if user is connected
+        syncAppointmentToGoogleCalendar(savedAppointment, userEmail, "create");
+
         return mapToResponseDto(savedAppointment);
     }
 
-    @Override //TODO: think of more elegant way of checking everything than bunch of if statements
+    @Override
     public AppointmentResponseDto rescheduleAppointment(Integer appointmentId, RescheduleAppointmentDto rescheduleDto, String userEmail) {
 
         Appointment appointment = appointmentRepository.findById(appointmentId)
@@ -123,6 +132,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         Appointment updatedAppointment = appointmentRepository.save(appointment);
 
         sendRescheduleNotificationEmail(updatedAppointment, oldSlot);
+
+        // Update Google Calendar event if user is connected
+        syncAppointmentToGoogleCalendar(updatedAppointment, userEmail, "update");
 
         return mapToResponseDto(updatedAppointment);
     }
@@ -176,6 +188,9 @@ public class AppointmentServiceImpl implements AppointmentService {
         releaseSlotForAppointment(appointment);
 
         sendCancellationEmail(appointment);
+
+        // Delete from Google Calendar if user is connected
+        syncAppointmentToGoogleCalendar(appointment, userEmail, "delete");
     }
 
     @Override
@@ -189,10 +204,18 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         if ("CANCELLED".equalsIgnoreCase(statusUpdate.getStatus())) {
             releaseSlotForAppointment(appointment);
+            // Delete from Google Calendar for the user
+            syncAppointmentToGoogleCalendar(appointment, appointment.getAppUser().getEmail(), "delete");
         }
 
         appointment.setStatus(newStatus);
         Appointment updatedAppointment = appointmentRepository.save(appointment);
+
+        // Update Google Calendar event if status changed but not cancelled
+        if (!"CANCELLED".equalsIgnoreCase(statusUpdate.getStatus())) {
+            syncAppointmentToGoogleCalendar(updatedAppointment, appointment.getAppUser().getEmail(), "update");
+        }
+
         return mapToResponseDto(updatedAppointment);
     }
 
@@ -206,6 +229,33 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
     }
 
+    private void syncAppointmentToGoogleCalendar(Appointment appointment, String userEmail, String action) {
+        try {
+            if (googleCalendarService.isUserConnectedToGoogleCalendar(userEmail)) {
+                switch (action.toLowerCase()) {
+                    case "create":
+                        googleCalendarService.createCalendarEvent(appointment, userEmail);
+                        log.info("Created Google Calendar event for appointment {}", appointment.getAppointmentId());
+                        break;
+                    case "update":
+                        googleCalendarService.updateCalendarEvent(appointment, userEmail);
+                        log.info("Updated Google Calendar event for appointment {}", appointment.getAppointmentId());
+                        break;
+                    case "delete":
+                        googleCalendarService.deleteCalendarEvent(appointment, userEmail);
+                        log.info("Deleted Google Calendar event for appointment {}", appointment.getAppointmentId());
+                        break;
+                    default:
+                        log.warn("Unknown calendar sync action: {}", action);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to sync appointment {} to Google Calendar: {}",
+                    appointment.getAppointmentId(), e.getMessage());
+            // Don't fail the main operation if calendar sync fails
+        }
+    }
+
     private void sendBookingConfirmationEmail(Appointment appointment) {
         try {
             String subject = "Appointment Confirmation - " + appointment.getService().getName();
@@ -213,7 +263,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             emailService.sendVerificationEmail(appointment.getAppUser().getEmail(), subject, htmlMessage);
         } catch (Exception e) {
             // Log error but don't fail the booking
-            System.err.println("Failed to send booking confirmation email: " + e.getMessage());
+            log.error("Failed to send booking confirmation email: {}", e.getMessage());
         }
     }
 
@@ -223,7 +273,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             String htmlMessage = buildRescheduleEmailHtml(appointment, oldSlot);
             emailService.sendVerificationEmail(appointment.getAppUser().getEmail(), subject, htmlMessage);
         } catch (Exception e) {
-            System.err.println("Failed to send reschedule notification email: " + e.getMessage());
+            log.error("Failed to send reschedule notification email: {}", e.getMessage());
         }
     }
 
@@ -233,14 +283,17 @@ public class AppointmentServiceImpl implements AppointmentService {
             String htmlMessage = buildCancellationEmailHtml(appointment);
             emailService.sendVerificationEmail(appointment.getAppUser().getEmail(), subject, htmlMessage);
         } catch (Exception e) {
-            System.err.println("Failed to send cancellation email: " + e.getMessage());
+            log.error("Failed to send cancellation email: {}", e.getMessage());
         }
     }
 
-    // transfer this whole email related code into EmailService, right now service is breaking one of
-    // SOLID principles, but we roll with it
+    // Email template methods || transfer them to email service in the future
 
     private String buildConfirmationEmailHtml(Appointment appointment) {
+        String calendarSync = googleCalendarService.isUserConnectedToGoogleCalendar(appointment.getAppUser().getEmail())
+                ? "<p style=\"color: #28a745;\">✓ This appointment has been added to your Google Calendar</p>"
+                : "<p style=\"color: #6c757d;\">Connect your Google Calendar in your account settings to automatically sync appointments</p>";
+
         return "<html>"
                 + "<body style=\"font-family: Arial, sans-serif;\">"
                 + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
@@ -255,6 +308,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 + "<p><strong>Price:</strong> $" + appointment.getService().getPrice() + "</p>"
                 + (appointment.getDescription() != null ? "<p><strong>Notes:</strong> " + appointment.getDescription() + "</p>" : "")
                 + "</div>"
+                + "<div style=\"margin-top: 15px;\">" + calendarSync + "</div>"
                 + "<p style=\"font-size: 14px; margin-top: 20px;\">If you need to reschedule or cancel, please contact us or use your account dashboard.</p>"
                 + "</div>"
                 + "</body>"
@@ -262,6 +316,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     private String buildRescheduleEmailHtml(Appointment appointment, AvailabilitySlot oldSlot) {
+        String calendarSync = googleCalendarService.isUserConnectedToGoogleCalendar(appointment.getAppUser().getEmail())
+                ? "<p style=\"color: #28a745;\">✓ Your Google Calendar has been updated with the new appointment time</p>"
+                : "<p style=\"color: #6c757d;\">Connect your Google Calendar in your account settings to automatically sync appointment changes</p>";
+
         return "<html>"
                 + "<body style=\"font-family: Arial, sans-serif;\">"
                 + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
@@ -276,12 +334,17 @@ public class AppointmentServiceImpl implements AppointmentService {
                 + "<hr style=\"margin: 15px 0;\">"
                 + "<p style=\"color: #666;\"><strong>Previous Time:</strong> " + oldSlot.getStartTime().toLocalDate() + " at " + oldSlot.getStartTime().toLocalTime() + "</p>"
                 + "</div>"
+                + "<div style=\"margin-top: 15px;\">" + calendarSync + "</div>"
                 + "</div>"
                 + "</body>"
                 + "</html>";
     }
 
     private String buildCancellationEmailHtml(Appointment appointment) {
+        String calendarSync = googleCalendarService.isUserConnectedToGoogleCalendar(appointment.getAppUser().getEmail())
+                ? "<p style=\"color: #28a745;\">✓ This appointment has been removed from your Google Calendar</p>"
+                : "";
+
         return "<html>"
                 + "<body style=\"font-family: Arial, sans-serif;\">"
                 + "<div style=\"background-color: #f5f5f5; padding: 20px;\">"
@@ -293,12 +356,12 @@ public class AppointmentServiceImpl implements AppointmentService {
                 + "<p><strong>Date:</strong> " + appointment.getScheduledAt() + "</p>"
                 + "<p><strong>Time:</strong> " + appointment.getSlot().getStartTime().toLocalTime() + "</p>"
                 + "</div>"
+                + "<div style=\"margin-top: 15px;\">" + calendarSync + "</div>"
                 + "<p style=\"font-size: 14px; margin-top: 20px;\">We're sorry to see you go! Feel free to book another appointment anytime.</p>"
                 + "</div>"
                 + "</body>"
                 + "</html>";
     }
-
 
     private AppointmentResponseDto mapToResponseDto(Appointment appointment) {
         return new AppointmentResponseDto(

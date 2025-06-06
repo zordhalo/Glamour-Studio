@@ -5,27 +5,28 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "calendar_tokens")
+@Table(name = "calendar_events")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CalendarToken {
+public class CalendarEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "token_id")
-    private Integer tokenId;
+    @Column(name = "calendar_event_id")
+    private Integer calendarEventId;
+
+    @ManyToOne // for future enhancement with other calendar providers
+    @JoinColumn(name = "appointment_id")
+    private Appointment appointment;
 
     @ManyToOne
     @JoinColumn(name = "app_user_id")
     private AppUser appUser;
 
     private String provider;
-    private String accessToken;
-    private String refreshToken;
-    private LocalDateTime expiresAt;
-    private String email;
+    private String externalEventId;
+    private String calendarId;
+    private Boolean synced;
 }
