@@ -6,6 +6,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
@@ -74,7 +75,7 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
             GoogleAuthorizationCodeFlow flow = createFlow();
             return flow.newAuthorizationUrl()
                     .setRedirectUri(redirectUri)
-                    .setState(userEmail) // Pass user email as state
+                    .setState(userEmail)
                     .build();
         } catch (Exception e) {
             log.error("Error creating authorization URL: ", e);
@@ -151,18 +152,17 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                 .setSummary(appointment.getService().getName() + " Appointment")
                 .setDescription(buildEventDescription(appointment));
 
-        // Set location
         if (appointment.getLocation() != null) {
             event.setLocation(appointment.getLocation());
         }
 
-        // Set time
         DateTime startDateTime = new DateTime(
                 appointment.getSlot().getStartTime()
                         .atZone(ZoneId.systemDefault())
                         .toInstant()
                         .toEpochMilli()
         );
+
         DateTime endDateTime = new DateTime(
                 appointment.getSlot().getEndTime()
                         .atZone(ZoneId.systemDefault())
@@ -180,21 +180,20 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                 .setTimeZone(ZoneId.systemDefault().getId());
         event.setEnd(end);
 
-        // Set reminder
         EventReminder[] reminderOverrides = new EventReminder[] {
                 new EventReminder().setMethod("email").setMinutes(24 * 60), // 1 day before
                 new EventReminder().setMethod("popup").setMinutes(60), // 1 hour before
         };
+
         Event.Reminders reminders = new Event.Reminders()
                 .setUseDefault(false)
                 .setOverrides(List.of(reminderOverrides));
         event.setReminders(reminders);
 
-        // Create the event
-        String calendarId = "primary"; // Use primary calendar
+
+        String calendarId = "primary";
         Event createdEvent = calendarService.events().insert(calendarId, event).execute();
 
-        // Save calendar event record
         CalendarEvent calendarEvent = new CalendarEvent();
         calendarEvent.setAppointment(appointment);
         calendarEvent.setAppUser(user);
@@ -216,30 +215,28 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                 .findByAppointmentAndProvider(appointment, PROVIDER_GOOGLE);
 
         if (calendarEventOpt.isEmpty()) {
-            // If no calendar event exists, create one
             return createCalendarEvent(appointment, userEmail);
         }
 
         CalendarEvent calendarEvent = calendarEventOpt.get();
         Calendar calendarService = getCalendarService(userEmail);
 
-        // Get the existing event
         Event existingEvent = calendarService.events()
                 .get(calendarEvent.getCalendarId(), calendarEvent.getExternalEventId())
                 .execute();
 
-        // Update event details
         existingEvent.setSummary(appointment.getService().getName() + " Appointment")
                 .setDescription(buildEventDescription(appointment))
                 .setLocation(appointment.getLocation());
 
-        // Update time
+
         DateTime startDateTime = new DateTime(
                 appointment.getSlot().getStartTime()
                         .atZone(ZoneId.systemDefault())
                         .toInstant()
                         .toEpochMilli()
         );
+
         DateTime endDateTime = new DateTime(
                 appointment.getSlot().getEndTime()
                         .atZone(ZoneId.systemDefault())
@@ -257,7 +254,6 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                 .setTimeZone(ZoneId.systemDefault().getId());
         existingEvent.setEnd(end);
 
-        // Update the event
         Event updatedEvent = calendarService.events()
                 .update(calendarEvent.getCalendarId(), calendarEvent.getExternalEventId(), existingEvent)
                 .execute();
@@ -281,7 +277,6 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
         Calendar calendarService = getCalendarService(userEmail);
 
         try {
-            // Delete from Google Calendar
             calendarService.events()
                     .delete(calendarEvent.getCalendarId(), calendarEvent.getExternalEventId())
                     .execute();
@@ -289,7 +284,6 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
             log.warn("Failed to delete event from Google Calendar: {}", e.getMessage());
         }
 
-        // Delete from our database
         calendarEventRepository.delete(calendarEvent);
     }
 
@@ -406,12 +400,10 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     @Override
     public boolean isAppointmentSynced(Integer appointmentId, String userEmail) {
         try {
-            // First check if user is connected to Google Calendar
             if (!isUserConnectedToGoogleCalendar(userEmail)) {
                 return false;
             }
 
-            // Find the appointment
             Appointment appointment = appointmentRepository.findById(appointmentId)
                     .orElse(null);
 
@@ -419,12 +411,11 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                 return false;
             }
 
-            // Check if the appointment belongs to this user
+
             if (!appointment.getAppUser().getEmail().equals(userEmail)) {
                 return false;
             }
 
-            // Check if there's a calendar event record for this appointment
             return calendarEventRepository
                     .findByAppointmentAndProvider(appointment, PROVIDER_GOOGLE)
                     .isPresent();
@@ -441,7 +432,6 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
         int syncedCount = 0;
 
         try {
-            // Verify user is connected to Google Calendar
             if (!isUserConnectedToGoogleCalendar(userEmail)) {
                 throw new RuntimeException("User is not connected to Google Calendar");
             }
@@ -449,8 +439,6 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
             AppUser user = userRepository.findByEmail(userEmail)
                     .orElseThrow(() -> new RuntimeException("User not found"));
 
-            // Get all future appointments for this user that are not cancelled
-            // Note: You'll need to inject AppointmentRepository
             List<Appointment> futureAppointments = appointmentRepository
                     .findByAppUserAndScheduledAtAfterAndStatusNameNot(
                             user,
@@ -458,16 +446,13 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                             "CANCELLED"
                     );
 
-            // For each appointment, check if it's already synced
             for (Appointment appointment : futureAppointments) {
                 try {
-                    // Check if this appointment is already synced
                     boolean alreadySynced = calendarEventRepository
                             .findByAppointmentAndProvider(appointment, PROVIDER_GOOGLE)
                             .isPresent();
 
                     if (!alreadySynced && appointment.getSlot() != null) {
-                        // Create calendar event for this appointment
                         createCalendarEvent(appointment, userEmail);
                         syncedCount++;
                         log.info("Synced appointment {} to Google Calendar", appointment.getAppointmentId());
@@ -475,7 +460,6 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
                 } catch (Exception e) {
                     log.error("Failed to sync appointment {}: {}",
                             appointment.getAppointmentId(), e.getMessage());
-                    // Continue with next appointment
                 }
             }
 
@@ -524,10 +508,17 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
 
         NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 
-        // Create credential using the stored tokens
-        Credential credential = new Credential(BearerToken.authorizationHeaderAccessMethod())
-                .setAccessToken(token.getAccessToken())
-                .setRefreshToken(token.getRefreshToken());
+        GoogleAuthorizationCodeFlow flow = createFlow();
+
+        Credential credential = new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
+                .setJsonFactory(JSON_FACTORY)
+                .setTransport(httpTransport)
+                .setClientAuthentication(flow.getClientAuthentication())
+                .setTokenServerUrl(new GenericUrl(flow.getTokenServerEncodedUrl()))
+                .build();
+
+        credential.setAccessToken(token.getAccessToken());
+        credential.setRefreshToken(token.getRefreshToken());
 
         return new Calendar.Builder(
                 httpTransport,

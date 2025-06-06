@@ -78,8 +78,8 @@ public class SecurityConfig {
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(Customizer.withDefaults())
-                .oauth2Login(Customizer.withDefaults()); // to be deleted later
+                .httpBasic(Customizer.withDefaults());
+                //.oauth2Login(Customizer.withDefaults()); // to be deleted later
         return http.build();
     }
 
