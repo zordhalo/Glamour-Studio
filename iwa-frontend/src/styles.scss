@@ -7,25 +7,26 @@
 // Include the common styles for Angular Material core
 @include mat.core();
 
-// Define custom color palettes using the correct syntax
-$primary-palette: mat.define-palette(mat.$indigo-palette, 500, 300, 700);
-$accent-palette: mat.define-palette(mat.$pink-palette, A200, A100, A400);
-$warn-palette: mat.define-palette(mat.$red-palette);
-
-// Create the theme using the correct function
-$theme: mat.define-light-theme((
+// Define custom color palettes using M3 (Material Design 3) theming
+$theme: mat.define-theme((
   color: (
-    primary: $primary-palette,
-    accent: $accent-palette,
-    warn: $warn-palette,
+    theme-type: light,
+    primary: mat.$azure-palette,
+    tertiary: mat.$blue-palette,
   ),
-  typography: mat.define-typography-config(
-    $font-family: 'Inter, sans-serif',
+  typography: (
+    brand-family: 'Inter, sans-serif',
+    plain-family: 'Inter, sans-serif',
   ),
+  density: (
+    scale: 0
+  )
 ));
 
-// Include theme styles for all components
-@include mat.all-component-themes($theme);
+// Apply the theme to the html element
+:root {
+  @include mat.all-component-themes($theme);
+}
 
 /* Global Styles */
 * {
@@ -70,12 +71,12 @@ p {
 
 /* Links */
 a {
-  color: mat.get-color-from-palette($primary-palette, 500);
+  color: var(--mat-sys-primary);
   text-decoration: none;
   transition: color 0.3s ease;
 
   &:hover {
-    color: mat.get-color-from-palette($primary-palette, 700);
+    color: var(--mat-sys-primary-hover);
   }
 }
 
@@ -110,7 +111,7 @@ a {
 }
 
 .mat-icon {
-  font-family: 'Material Icons' !important;
+  font-family: 'Material Icons', sans-serif !important;
 }
 
 /* Custom scrollbar */
@@ -124,11 +125,11 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, mat.get-color-from-palette($primary-palette, 400), mat.get-color-from-palette($primary-palette, 600));
+  background: linear-gradient(135deg, var(--mat-sys-primary), var(--mat-sys-primary-container));
   border-radius: 4px;
 
   &:hover {
-    background: linear-gradient(135deg, mat.get-color-from-palette($primary-palette, 600), mat.get-color-from-palette($primary-palette, 400));
+    background: linear-gradient(135deg, var(--mat-sys-primary-container), var(--mat-sys-primary));
   }
 }
 
@@ -139,7 +140,7 @@ a:focus,
 input:focus,
 textarea:focus,
 select:focus {
-  outline: 2px solid mat.get-color-from-palette($primary-palette, 500);
+  outline: 2px solid var(--mat-sys-primary);
   outline-offset: 2px;
 }
 
@@ -237,6 +238,33 @@ select:focus {
   .d-lg-none { display: none !important; }
   .d-lg-block { display: block !important; }
   .d-lg-flex { display: flex !important; }
+}
+
+/* CSS Variables */
+:root {
+  --border-radius: 12px;
+  --border-radius-small: 8px;
+  --transition: all 0.3s ease;
+}
+
+/* Glass effect utility class */
+.glass-effect {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+/* Error message styling */
+.error-message {
+  color: var(--mat-sys-error);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(244, 67, 54, 0.1);
+  border-radius: 4px;
 }
 
 /* Print styles */
