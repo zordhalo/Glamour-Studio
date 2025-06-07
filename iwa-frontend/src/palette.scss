@@ -1,0 +1,73 @@
+/* Coolors Exported Palette - https://coolors.co/f7fff7-231f20-17a398-f4f4ed */
+
+/* CSS HEX */
+:root {
+  --mint-cream: #f7fff7ff;
+  --raisin-black: #231f20ff;
+  --persian-green: #17a398ff;
+  --baby-powder: #f4f4edff;
+}
+
+/* CSS HSL */
+:root {
+  --mint-cream-hsl: hsla(120, 100%, 98%, 1);
+  --raisin-black-hsl: hsla(345, 6%, 13%, 1);
+  --persian-green-hsl: hsla(175, 75%, 36%, 1);
+  --baby-powder-hsl: hsla(60, 24%, 94%, 1);
+}
+
+/* SCSS HEX */
+$mint-cream: #f7fff7ff;
+$raisin-black: #231f20ff;
+$persian-green: #17a398ff;
+$baby-powder: #f4f4edff;
+
+/* SCSS HSL */
+$mint-cream-hsl: hsla(120, 100%, 98%, 1);
+$raisin-black-hsl: hsla(345, 6%, 13%, 1);
+$persian-green-hsl: hsla(175, 75%, 36%, 1);
+$baby-powder-hsl: hsla(60, 24%, 94%, 1);
+
+/* SCSS RGB */
+$mint-cream-rgb: rgba(247, 255, 247, 1);
+$raisin-black-rgb: rgba(35, 31, 32, 1);
+$persian-green-rgb: rgba(23, 163, 152, 1);
+$baby-powder-rgb: rgba(244, 244, 237, 1);
+
+/* SCSS Gradient */
+$gradient-top: linear-gradient(0deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
+$gradient-right: linear-gradient(90deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
+$gradient-bottom: linear-gradient(180deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
+$gradient-left: linear-gradient(270deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
+$gradient-top-right: linear-gradient(45deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
+$gradient-bottom-right: linear-gradient(135deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
+$gradient-top-left: linear-gradient(225deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
+$gradient-bottom-left: linear-gradient(315deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
+$gradient-radial: radial-gradient(#f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
+
+/* Modern palette variations using your colors */
+$primary-palette: (
+  50: lighten($persian-green, 45%),
+  100: lighten($persian-green, 35%),
+  200: lighten($persian-green, 25%),
+  300: lighten($persian-green, 15%),
+  400: lighten($persian-green, 8%),
+  500: $persian-green,
+  600: darken($persian-green, 8%),
+  700: darken($persian-green, 15%),
+  800: darken($persian-green, 25%),
+  900: darken($persian-green, 35%),
+);
+
+$accent-palette: (
+  50: lighten($mint-cream, 5%),
+  100: $mint-cream,
+  200: mix($mint-cream, $persian-green, 90%),
+  300: mix($mint-cream, $persian-green, 80%),
+  400: mix($mint-cream, $persian-green, 70%),
+  500: mix($mint-cream, $persian-green, 50%),
+  600: mix($mint-cream, $persian-green, 30%),
+  700: mix($mint-cream, $persian-green, 20%),
+  800: mix($mint-cream, $persian-green, 10%),
+  900: $persian-green,
+);

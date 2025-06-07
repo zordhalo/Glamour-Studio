@@ -1,27 +1,39 @@
-import { Component } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { RouterModule, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, MatToolbarModule, MatButtonModule, MatIconModule, AsyncPipe],
+  imports: [
+    CommonModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    RouterModule,
+  ],
   templateUrl: './header.html',
   styleUrls: ['./header.scss'],
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   isLoggedIn$: Observable<boolean>;
 
   constructor(private authService: AuthService, private router: Router) {
     this.isLoggedIn$ = this.authService.isLoggedIn();
   }
 
+  ngOnInit(): void {}
+
   logout(): void {
     this.authService.logout();
+  }
+
+  navigateToHome(): void {
+    this.router.navigate(['/']);
   }
 }

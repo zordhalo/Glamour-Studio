@@ -1,0 +1,211 @@
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-content">
+    <div class="hero-text">
+      <h1 class="hero-title">
+        Transform Your Beauty with 
+        <span class="gradient-text">Professional Makeup Artistry</span>
+      </h1>
+      <p class="hero-subtitle">
+        Discover the art of beauty transformation with our expert makeup services. 
+        From natural everyday looks to glamorous special occasions, we bring your vision to life.
+      </p>
+      <div class="hero-buttons">
+        <button mat-raised-button color="primary" class="cta-button" (click)="navigateToBooking()">
+          <mat-icon>calendar_today</mat-icon>
+          Book Appointment
+        </button>
+        <button mat-stroked-button class="secondary-button" (click)="navigateToServices()">
+          <mat-icon>spa</mat-icon>
+          View Services
+        </button>
+      </div>
+    </div>
+    <div class="hero-image">
+      <div class="image-container">
+        <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=700&fit=crop&crop=face" 
+             alt="Professional makeup artistry" 
+             class="main-image">
+        <div class="floating-elements">
+          <div class="floating-card card-1">
+            <mat-icon>face_retouching_natural</mat-icon>
+            <span>Natural Beauty</span>
+          </div>
+          <div class="floating-card card-2">
+            <mat-icon>auto_awesome</mat-icon>
+            <span>Glamour</span>
+          </div>
+          <div class="floating-card card-3">
+            <mat-icon>palette</mat-icon>
+            <span>Creative Art</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About Me Section -->
+<section class="about-section" id="about">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">About Me</h2>
+      <p class="section-subtitle">Passionate makeup artist dedicated to enhancing your natural beauty</p>
+    </div>
+    
+    <div class="about-content">
+      <div class="about-text">
+        <h3 class="about-title">Hi, I'm Sophia Martinez</h3>
+        <p class="about-description">
+          With over 8 years of experience in the beauty industry, I specialize in creating stunning makeup looks 
+          that enhance your natural features and boost your confidence. My journey began with a passion for art 
+          and color, which naturally evolved into the world of makeup artistry.
+        </p>
+        <p class="about-description">
+          I believe that makeup is not just about looking beautiful—it's about feeling empowered and confident 
+          in your own skin. Whether you're preparing for your wedding day, a photoshoot, or simply want to treat 
+          yourself to a glamorous makeover, I'm here to make your vision come to life.
+        </p>
+        
+        <div class="credentials">
+          <h4>Certifications & Training</h4>
+          <ul class="credentials-list">
+            <li><mat-icon>verified</mat-icon> Certified Professional Makeup Artist - Beauty Academy</li>
+            <li><mat-icon>verified</mat-icon> Advanced Bridal Makeup Specialist</li>
+            <li><mat-icon>verified</mat-icon> Editorial & Fashion Makeup Certificate</li>
+            <li><mat-icon>verified</mat-icon> Special Effects Makeup Training</li>
+          </ul>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-number">500+</span>
+            <span class="stat-label">Happy Clients</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">8+</span>
+            <span class="stat-label">Years Experience</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">100+</span>
+            <span class="stat-label">Bridal Looks</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="about-images">
+        <div class="image-grid">
+          <div class="image-item main-photo">
+            <img src="https://images.unsplash.com/photo-1594736797933-d0d8aa4e67b3?w=400&h=500&fit=crop&crop=face" 
+                 alt="Sophia Martinez - Professional Makeup Artist">
+            <div class="image-overlay">
+              <h4>Sophia Martinez</h4>
+              <p>Professional Makeup Artist</p>
+            </div>
+          </div>
+          
+          <div class="image-item work-1">
+            <img src="https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=300&h=300&fit=crop&crop=face" 
+                 alt="Bridal makeup work">
+            <div class="work-overlay">
+              <span>Bridal Beauty</span>
+            </div>
+          </div>
+          
+          <div class="image-item work-2">
+            <img src="https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=300&h=300&fit=crop&crop=face" 
+                 alt="Glamour makeup work">
+            <div class="work-overlay">
+              <span>Glamour Look</span>
+            </div>
+          </div>
+          
+          <div class="image-item work-3">
+            <img src="https://images.unsplash.com/photo-1583001931096-959e9a1a6223?w=300&h=300&fit=crop&crop=face" 
+                 alt="Natural makeup work">
+            <div class="work-overlay">
+              <span>Natural Glow</span>
+            </div>
+          </div>
+          
+          <div class="image-item work-4">
+            <img src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=300&h=300&fit=crop&crop=face" 
+                 alt="Editorial makeup work">
+            <div class="work-overlay">
+              <span>Editorial Style</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Services Preview Section -->
+<section class="services-preview">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">My Services</h2>
+      <p class="section-subtitle">Professional makeup services tailored to your needs</p>
+    </div>
+    
+    <div class="services-grid">
+      <mat-card class="service-card">
+        <div class="service-icon">
+          <mat-icon>favorite</mat-icon>
+        </div>
+        <h3>Bridal Makeup</h3>
+        <p>Perfect for your special day with long-lasting, photograph-ready looks</p>
+        <span class="service-price">From $250</span>
+      </mat-card>
+      
+      <mat-card class="service-card">
+        <div class="service-icon">
+          <mat-icon>star</mat-icon>
+        </div>
+        <h3>Special Events</h3>
+        <p>Glamorous looks for parties, galas, and important occasions</p>
+        <span class="service-price">From $150</span>
+      </mat-card>
+      
+      <mat-card class="service-card">
+        <div class="service-icon">
+          <mat-icon>face_retouching_natural</mat-icon>
+        </div>
+        <h3>Natural Everyday</h3>
+        <p>Enhance your natural beauty for daily confidence</p>
+        <span class="service-price">From $80</span>
+      </mat-card>
+      
+      <mat-card class="service-card">
+        <div class="service-icon">
+          <mat-icon>photo_camera</mat-icon>
+        </div>
+        <h3>Photoshoot Ready</h3>
+        <p>Professional makeup for photography and video shoots</p>
+        <span class="service-price">From $200</span>
+      </mat-card>
+    </div>
+    
+    <div class="services-cta">
+      <button mat-raised-button color="primary" (click)="navigateToServices()">
+        <mat-icon>spa</mat-icon>
+        View All Services
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Ready to Transform Your Look?</h2>
+      <p>Book your appointment today and let's create something beautiful together</p>
+      <button mat-raised-button color="accent" class="cta-button" (click)="navigateToBooking()">
+        <mat-icon>calendar_today</mat-icon>
+        Book Your Session
+      </button>
+    </div>
+  </div>
+</section>
