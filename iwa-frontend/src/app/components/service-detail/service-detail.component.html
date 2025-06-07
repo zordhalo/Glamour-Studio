@@ -1,0 +1,37 @@
+<div class="detail-container">
+  @if (service) {
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>{{ service.name }}</mat-card-title>
+        <mat-card-subtitle>{{ service.minDuration }} min | ${{ service.price }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <p>{{ service.description }}</p>
+
+        <h3 class="slots-header">Available Slots</h3>
+        @if (availableSlots.length > 0) {
+          <mat-list>
+            @for (slot of availableSlots; track slot.slotId) {
+              <mat-list-item>
+                <span matListItemTitle>{{ slot.startTime | date:'fullDate' }}</span>
+                <span matListItemLine>{{ slot.startTime | date:'shortTime' }} - {{ slot.endTime | date:'shortTime' }}</span>
+                @if (isLoggedIn$ | async) {
+                  <button mat-flat-button color="primary" (click)="bookAppointment(slot)">Book Now</button>
+                }
+              </mat-list-item>
+            }
+          </mat-list>
+        } @else {
+          <p>No available slots for this service in the near future.</p>
+        }
+
+        @if (!(isLoggedIn$ | async)) {
+          <p class="login-prompt">Please <a routerLink="/login">login</a> to book an appointment.</p>
+        }
+
+      </mat-card-content>
+    </mat-card>
+  } @else {
+    <p>Loading service details...</p>
+  }
+</div>

@@ -1,0 +1,62 @@
+<div class="auth-container">
+  <div class="signup-container fade-in">
+    <mat-card class="glass-effect">
+      <mat-card-header>
+        <mat-card-title>Create Account</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>First Name</mat-label>
+              <input matInput formControlName="name" required />
+              <mat-icon matPrefix>person</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Last Name</mat-label>
+              <input matInput formControlName="surname" required />
+              <mat-icon matPrefix>person</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" required />
+            <mat-icon matPrefix>email</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Phone Number</mat-label>
+            <input matInput formControlName="phoneNum" required />
+            <mat-icon matPrefix>phone</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="password" type="password" required />
+            <mat-icon matPrefix>lock</mat-icon>
+            <mat-hint>Minimum 8 characters</mat-hint>
+          </mat-form-field>
+
+          @if (errorMessage) {
+            <p class="error-message">{{ errorMessage }}</p>
+          }
+
+          <button mat-raised-button color="primary" type="submit" [disabled]="!signupForm.valid || isSubmitting">
+            @if (isSubmitting) {
+              Creating Account...
+            } @else {
+              Create Account
+            }
+          </button>
+        </form>
+
+        <div class="login-link">
+          Already have an account?
+          <a routerLink="/login">Sign in here</a>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

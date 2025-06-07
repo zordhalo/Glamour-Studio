@@ -1,0 +1,166 @@
+.verify-container {
+  mat-card {
+    max-width: 450px;
+    width: 100%;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+    
+    mat-card-header {
+      margin-bottom: 2rem;
+      
+      mat-card-title {
+        font-size: 2rem;
+        font-weight: 700;
+        text-align: center;
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 0 auto;
+      }
+    }
+    
+    mat-card-content {
+      .email-icon-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+        
+        .email-icon {
+          font-size: 80px;
+          width: 80px;
+          height: 80px;
+          color: var(--success);
+          animation: pulse 2s ease-in-out infinite;
+        }
+      }
+      
+      .verify-description {
+        text-align: center;
+        color: var(--text-secondary);
+        margin-bottom: 2rem;
+        line-height: 1.8;
+        
+        strong {
+          color: var(--primary-color);
+          font-weight: 600;
+        }
+      }
+      
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        
+        .code-input {
+          mat-form-field-wrapper {
+            padding-bottom: 0;
+          }
+          
+          .code-input-field {
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 0.5rem;
+            font-weight: 600;
+          }
+        }
+        
+        .verify-button {
+          margin-top: 1.5rem;
+          width: 100%;
+          height: 48px;
+          font-size: 1rem;
+          position: relative;
+          overflow: hidden;
+          
+          .button-spinner {
+            display: inline-block;
+            margin-right: 8px;
+          }
+          
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+          }
+          
+          &:hover::before {
+            left: 100%;
+          }
+        }
+      }
+      
+      .resend-section {
+        text-align: center;
+        margin-top: 2rem;
+        
+        .resend-text {
+          color: var(--text-secondary);
+          font-size: 0.875rem;
+          
+          .resend-button {
+            margin-left: 0.5rem;
+            font-weight: 600;
+          }
+          
+          .resend-timer {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-left: 0.5rem;
+          }
+        }
+      }
+      
+      .back-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        
+        a {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: var(--text-secondary);
+          font-size: 0.875rem;
+          transition: var(--transition);
+          
+          &:hover {
+            color: var(--primary-color);
+            
+            mat-icon {
+              transform: translateX(-3px);
+            }
+          }
+          
+          mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            transition: transform 0.3s ease;
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+// Spinner color override
+::ng-deep .mat-mdc-progress-spinner {
+  --mdc-circular-progress-active-indicator-color: white;
+}

@@ -1,0 +1,209 @@
+.services-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .services-header {
+    text-align: center;
+    margin-bottom: 3rem;
+
+    .page-title {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    .page-subtitle {
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      animation: fadeIn 0.6s ease-out 0.2s;
+      animation-fill-mode: both;
+    }
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+
+    .service-card {
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 0.6s ease-out;
+      animation-fill-mode: both;
+
+      @for $i from 1 through 10 {
+        &:nth-child(#{$i}) {
+          animation-delay: #{$i * 0.1}s;
+        }
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+      }
+
+      &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+
+        &::before {
+          transform: scaleX(1);
+        }
+
+        .service-icon {
+          transform: scale(1.1) rotate(5deg);
+          background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+
+          mat-icon {
+            color: white;
+          }
+        }
+
+        .book-btn {
+          transform: translateX(5px);
+        }
+      }
+
+      .service-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: rgba(99, 102, 241, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 1.5rem auto 1rem;
+        transition: var(--transition);
+
+        mat-icon {
+          font-size: 30px;
+          width: 30px;
+          height: 30px;
+          color: var(--primary-color);
+          transition: var(--transition);
+        }
+      }
+
+      mat-card-header {
+        text-align: center;
+
+        mat-card-title {
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin-bottom: 0.5rem;
+          color: var(--text-primary);
+        }
+
+        mat-card-subtitle {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 1rem;
+          color: var(--text-secondary);
+
+          .duration {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+
+            mat-icon {
+              font-size: 16px;
+              width: 16px;
+              height: 16px;
+            }
+          }
+
+          .price {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+          }
+        }
+      }
+
+      mat-card-content {
+        text-align: center;
+        padding: 1rem 1.5rem;
+
+        .service-description {
+          color: var(--text-secondary);
+          line-height: 1.6;
+        }
+      }
+
+      mat-card-actions {
+        display: flex;
+        justify-content: center;
+        padding: 1rem;
+
+        .book-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          transition: var(--transition);
+
+          mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+          }
+        }
+      }
+    }
+  }
+
+  .no-services {
+    text-align: center;
+    padding: 4rem;
+    color: var(--text-secondary);
+
+    mat-icon {
+      font-size: 80px;
+      width: 80px;
+      height: 80px;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    p {
+      font-size: 1.25rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .services-header {
+      margin-bottom: 2rem;
+
+      .page-title {
+        font-size: 2rem;
+      }
+
+      .page-subtitle {
+        font-size: 1rem;
+      }
+    }
+
+    .services-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+  }
+}
