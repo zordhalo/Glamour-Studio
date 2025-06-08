@@ -128,11 +128,13 @@ export class VerifyEmailComponent implements OnInit {
     });
   }
 
-  // Format the input to accept only numbers
+  // Format the input to accept only numbers and clear placeholder behavior
   onCodeInput(event: any): void {
     const value = event.target.value.replace(/\D/g, '');
     if (value.length <= 6) {
       this.verifyForm.patchValue({ code: value });
+      // Clear the placeholder effect by ensuring the input shows the actual value
+      event.target.value = value;
     }
   }
 }

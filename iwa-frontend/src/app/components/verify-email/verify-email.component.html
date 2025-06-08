@@ -8,39 +8,39 @@
         <div class="email-icon-container">
           <mat-icon class="email-icon">mark_email_read</mat-icon>
         </div>
-        
+
         <p class="verify-description">
           We've sent a verification code to<br>
           <strong>{{ email }}</strong>
         </p>
-        
+
         <form [formGroup]="verifyForm" (ngSubmit)="onSubmit()">
           <mat-form-field appearance="outline" class="code-input">
             <mat-label>Enter 6-digit code</mat-label>
-            <input 
-              matInput 
-              formControlName="code" 
-              type="text" 
+            <input
+              matInput
+              formControlName="code"
+              type="text"
               maxlength="6"
-              placeholder="000000"
+              placeholder="Enter code"
               (input)="onCodeInput($event)"
               class="code-input-field"
               required />
             <mat-icon matPrefix>pin</mat-icon>
           </mat-form-field>
-          
+
           @if (errorMessage) {
             <p class="error-message">{{ errorMessage }}</p>
           }
-          
+
           @if (successMessage) {
             <p class="success-message">{{ successMessage }}</p>
           }
-          
-          <button 
-            mat-raised-button 
-            color="primary" 
-            type="submit" 
+
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
             [disabled]="!verifyForm.valid || isLoading"
             class="verify-button">
             @if (isLoading) {
@@ -50,7 +50,7 @@
             }
           </button>
         </form>
-        
+
         <div class="resend-section">
           <p class="resend-text">
             Didn't receive the code?
@@ -63,7 +63,7 @@
             }
           </p>
         </div>
-        
+
         <div class="back-link">
           <a routerLink="/signup">
             <mat-icon>arrow_back</mat-icon>

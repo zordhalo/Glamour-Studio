@@ -6,16 +6,9 @@ import { HeaderComponent } from './components/layout/header/header';
   selector: 'app-root',
   standalone: true,
   imports: [HeaderComponent, RouterOutlet],
-  template: `
-    <app-header></app-header>
-    <main class="main-content">
-      <router-outlet></router-outlet>
-    </main>
-  `,
-  styles: [`
-    .main-content {
-      padding: 20px;
-    }
-  `],
+  templateUrl: './app.html',
+  styleUrls: ['./app.scss'],
 })
-export class App {}
+export class App {
+  title = 'Glamour Studio';
+}

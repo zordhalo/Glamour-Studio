@@ -1,37 +1,188 @@
-<div class="detail-container">
+<div class="service-detail-page">
   @if (service) {
-    <mat-card>
-      <mat-card-header>
-        <mat-card-title>{{ service.name }}</mat-card-title>
-        <mat-card-subtitle>{{ service.minDuration }} min | ${{ service.price }}</mat-card-subtitle>
-      </mat-card-header>
-      <mat-card-content>
-        <p>{{ service.description }}</p>
+    <!-- Hero Section -->
+    <section class="service-hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="breadcrumb">
+          <a routerLink="/services">Services</a>
+          <mat-icon>chevron_right</mat-icon>
+          <span>{{ service.name }}</span>
+        </div>
 
-        <h3 class="slots-header">Available Slots</h3>
+        <div class="service-header">
+          <div class="service-icon">
+            <mat-icon>spa</mat-icon>
+          </div>
+          <div class="service-info">
+            <h1 class="service-title">{{ service.name }}</h1>
+            <p class="service-description">{{ service.description }}</p>
+
+            <div class="service-meta">
+              <div class="meta-item">
+                <mat-icon>schedule</mat-icon>
+                <div class="meta-content">
+                  <span class="meta-label">Duration</span>
+                  <span class="meta-value">{{ service.minDuration }} minutes</span>
+                </div>
+              </div>
+
+              <div class="meta-item">
+                <mat-icon>attach_money</mat-icon>
+                <div class="meta-content">
+                  <span class="meta-label">Starting Price</span>
+                  <span class="meta-value price">${{ service.price }}</span>
+                </div>
+              </div>
+
+              <div class="meta-item">
+                <mat-icon>star</mat-icon>
+                <div class="meta-content">
+                  <span class="meta-label">Quality</span>
+                  <span class="meta-value">Professional</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section class="booking-section">
+      <div class="container">
+        <div class="booking-header">
+          <h2>Available Time Slots</h2>
+          <p>Choose your preferred date and time for your {{ service.name }} session</p>
+        </div>
+
         @if (availableSlots.length > 0) {
-          <mat-list>
+          <div class="slots-grid">
             @for (slot of availableSlots; track slot.slotId) {
-              <mat-list-item>
-                <span matListItemTitle>{{ slot.startTime | date:'fullDate' }}</span>
-                <span matListItemLine>{{ slot.startTime | date:'shortTime' }} - {{ slot.endTime | date:'shortTime' }}</span>
-                @if (isLoggedIn$ | async) {
-                  <button mat-flat-button color="primary" (click)="bookAppointment(slot)">Book Now</button>
-                }
-              </mat-list-item>
+              <div class="slot-card"
+                   [class.premium]="$index < 3"
+                   (click)="isLoggedIn ? bookAppointment(slot) : showLoginPrompt()">
+                <div class="slot-header">
+                  <div class="slot-date">
+                    <span class="day">{{ slot.startTime | date:'EEE' }}</span>
+                    <span class="date">{{ slot.startTime | date:'MMM d' }}</span>
+                  </div>
+                  @if ($index < 3) {
+                    <div class="premium-badge">Popular</div>
+                  }
+                </div>
+
+                <div class="slot-time">
+                  <mat-icon>access_time</mat-icon>
+                  <span>{{ slot.startTime | date:'h:mm a' }} - {{ slot.endTime | date:'h:mm a' }}</span>
+                </div>
+
+                <div class="slot-features">
+                  <div class="feature">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>Professional Setup</span>
+                  </div>
+                  <div class="feature">
+                    <mat-icon>check_circle</mat-icon>
+                    <span>High-Quality Products</span>
+                  </div>
+                </div>
+
+                <button class="book-btn"
+                        [disabled]="!isLoggedIn">
+                  @if (isLoggedIn) {
+                    <span>Book This Slot</span>
+                    <mat-icon>arrow_forward</mat-icon>
+                  } @else {
+                    <span>Login to Book</span>
+                    <mat-icon>login</mat-icon>
+                  }
+                </button>
+              </div>
             }
-          </mat-list>
+          </div>
         } @else {
-          <p>No available slots for this service in the near future.</p>
+          <div class="no-slots">
+            <div class="empty-state">
+              <mat-icon>event_busy</mat-icon>
+              <h3>No Available Slots</h3>
+              <p>We're currently fully booked for the next few weeks. Please check back soon or contact us directly for special arrangements.</p>
+              <div class="empty-actions">
+                <button mat-raised-button color="primary" routerLink="/services">
+                  <mat-icon>arrow_back</mat-icon>
+                  Browse Other Services
+                </button>
+                <button mat-stroked-button>
+                  <mat-icon>email</mat-icon>
+                  Contact Us
+                </button>
+              </div>
+            </div>
+          </div>
         }
 
-        @if (!(isLoggedIn$ | async)) {
-          <p class="login-prompt">Please <a routerLink="/login">login</a> to book an appointment.</p>
+        @if (!isLoggedIn) {
+          <div class="login-prompt">
+            <div class="prompt-content">
+              <div class="prompt-icon">
+                <mat-icon>account_circle</mat-icon>
+              </div>
+              <div class="prompt-text">
+                <h3>Ready to Book Your Appointment?</h3>
+                <p>Create an account or sign in to secure your preferred time slot and enjoy exclusive member benefits.</p>
+              </div>
+              <div class="prompt-actions">
+                <button mat-raised-button color="primary" routerLink="/login">
+                  <mat-icon>login</mat-icon>
+                  Sign In
+                </button>
+                <button mat-stroked-button routerLink="/signup">
+                  <mat-icon>person_add</mat-icon>
+                  Create Account
+                </button>
+              </div>
+            </div>
+          </div>
         }
+      </div>
+    </section>
 
-      </mat-card-content>
-    </mat-card>
+    <!-- Benefits Section -->
+    <section class="benefits-section">
+      <div class="container">
+        <h2>Why Choose Our {{ service.name }} Service?</h2>
+        <div class="benefits-grid">
+          <div class="benefit">
+            <mat-icon>workspace_premium</mat-icon>
+            <h4>Professional Quality</h4>
+            <p>Using only the finest makeup products and professional techniques</p>
+          </div>
+          <div class="benefit">
+            <mat-icon>schedule</mat-icon>
+            <h4>Flexible Scheduling</h4>
+            <p>Book at your convenience with our easy online scheduling system</p>
+          </div>
+          <div class="benefit">
+            <mat-icon>favorite</mat-icon>
+            <h4>Personalized Service</h4>
+            <p>Every session is tailored to your unique style and preferences</p>
+          </div>
+          <div class="benefit">
+            <mat-icon>camera_alt</mat-icon>
+            <h4>Photo Ready Results</h4>
+            <p>Long-lasting makeup that looks stunning in person and in photos</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
   } @else {
-    <p>Loading service details...</p>
+    <div class="loading-state">
+      <div class="loading-content">
+        <mat-icon class="loading-icon">spa</mat-icon>
+        <h3>Loading Service Details...</h3>
+        <p>Please wait while we prepare your beauty experience</p>
+      </div>
+    </div>
   }
 </div>

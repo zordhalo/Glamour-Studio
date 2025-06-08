@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { ServiceResponseDto } from '../../interfaces/service.dto';
@@ -9,13 +9,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../services/auth.service';
 import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-service-detail',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatListModule, MatButtonModule, MatSnackBarModule],
+  imports: [CommonModule, RouterLink, MatCardModule, MatListModule, MatButtonModule, MatSnackBarModule, MatIconModule],
   templateUrl: './service-detail.component.html',
   styleUrls: ['./service-detail.component.scss']
 })
@@ -23,6 +24,7 @@ export class ServiceDetailComponent implements OnInit {
   service: ServiceResponseDto | null = null;
   availableSlots: AvailabilitySlotResponseDto[] = [];
   isLoggedIn$: Observable<boolean>;
+  isLoggedIn = false;
 
   today = new Date().toISOString();
   farFuture = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString();
@@ -36,6 +38,7 @@ export class ServiceDetailComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {
     this.isLoggedIn$ = this.authService.isLoggedIn();
+    this.isLoggedIn$.subscribe(status => this.isLoggedIn = status);
   }
 
   ngOnInit(): void {
@@ -85,6 +88,14 @@ export class ServiceDetailComponent implements OnInit {
         // Refresh slots
         this.ngOnInit();
       }
+    });
+  }
+
+  showLoginPrompt(): void {
+    this.snackBar.open('Please log in to book an appointment', 'Login', {
+      duration: 5000,
+    }).onAction().subscribe(() => {
+      this.router.navigate(['/login']);
     });
   }
 }

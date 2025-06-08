@@ -1,42 +1,116 @@
-<div class="services-container">
-  <div class="services-header">
-    <h1 class="page-title">Our Services</h1>
-    <p class="page-subtitle">Discover our range of professional beauty treatments</p>
-  </div>
-
-  <div class="services-grid">
-    @for (service of services; track service.serviceId) {
-      <mat-card class="service-card glass-effect" [routerLink]="['/services', service.serviceId]">
-        <div class="service-icon">
-          <mat-icon>{{ getServiceIcon(service.name) }}</mat-icon>
-        </div>
-        <mat-card-header>
-          <mat-card-title>{{ service.name }}</mat-card-title>
-          <mat-card-subtitle>
-            <span class="duration">
-              <mat-icon>schedule</mat-icon>
-              {{ service.minDuration }} min
-            </span>
-            <span class="price">${{ service.price }}</span>
-          </mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <p class="service-description">{{ service.description }}</p>
-        </mat-card-content>
-        <mat-card-actions>
-          <button mat-raised-button color="primary" class="book-btn">
-            Book Now
-            <mat-icon>arrow_forward</mat-icon>
-          </button>
-        </mat-card-actions>
-      </mat-card>
-    }
-  </div>
-
-  @if (services.length === 0) {
-    <div class="no-services">
-      <mat-icon>spa</mat-icon>
-      <p>No services available at the moment</p>
+<div class="services-page">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-text">
+        <span class="hero-badge">
+          <mat-icon>spa</mat-icon>
+          Professional Services
+        </span>
+        <h1 class="hero-title">
+          Discover Your Perfect
+          <span class="gradient-text">Beauty Experience</span>
+        </h1>
+        <p class="hero-subtitle">
+          Choose from our curated selection of professional makeup services,
+          each crafted to enhance your natural beauty and boost your confidence.
+        </p>
+      </div>
     </div>
-  }
+  </section>
+
+  <!-- Services Grid Section -->
+  <section class="services-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Our Services</h2>
+        <p class="section-subtitle">Professional makeup artistry tailored to your unique style</p>
+      </div>
+
+      <div class="services-grid">
+        @for (service of services; track service.serviceId) {
+          <div class="service-card" [routerLink]="['/services', service.serviceId]">
+            <div class="card-background"></div>
+            <div class="service-header">
+              <div class="service-icon">
+                <mat-icon>{{ getServiceIcon(service.name) }}</mat-icon>
+              </div>
+              <div class="service-badge">Popular</div>
+            </div>
+
+            <div class="service-content">
+              <h3 class="service-title">{{ service.name }}</h3>
+              <p class="service-description">{{ service.description }}</p>
+
+              <div class="service-features">
+                <div class="feature">
+                  <mat-icon>schedule</mat-icon>
+                  <span>{{ service.minDuration }} minutes</span>
+                </div>
+                <div class="feature">
+                  <mat-icon>star</mat-icon>
+                  <span>Professional grade</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="service-footer">
+              <div class="price-section">
+                <span class="price-label">Starting from</span>
+                <span class="price">${{ service.price }}</span>
+              </div>
+              <button class="book-button">
+                <span>Book Now</span>
+                <mat-icon>arrow_forward</mat-icon>
+              </button>
+            </div>
+
+            <div class="card-glow"></div>
+          </div>
+        }
+      </div>
+
+      @if (services.length === 0) {
+        <div class="no-services">
+          <div class="empty-state">
+            <mat-icon>spa</mat-icon>
+            <h3>No Services Available</h3>
+            <p>We're currently updating our service offerings. Please check back soon!</p>
+            <button mat-raised-button color="primary" routerLink="/">
+              Return to Home
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Call to Action Section -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content">
+        <h2>Ready for Your Transformation?</h2>
+        <p>Join hundreds of satisfied clients who have discovered their perfect look</p>
+        <div class="cta-stats">
+          <div class="stat">
+            <span class="stat-number">500+</span>
+            <span class="stat-label">Happy Clients</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">98%</span>
+            <span class="stat-label">Satisfaction Rate</span>
+          </div>
+          <div class="stat">
+            <span class="stat-number">8+</span>
+            <span class="stat-label">Years Experience</span>
+          </div>
+        </div>
+        <button mat-raised-button color="accent" class="cta-button" routerLink="/signup">
+          <mat-icon>person_add</mat-icon>
+          Get Started Today
+        </button>
+      </div>
+    </div>
+  </section>
 </div>
