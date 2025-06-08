@@ -18,6 +18,9 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     @Value("${google.auth.client.id}")
     private String googleClientId;
 
+    @Value("${google.auth.frontend.client.id}")
+    private String googleFrontendClientId;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
@@ -31,7 +34,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
                 Map<String, Object> tokenInfo = response.getBody();
                 String audience = (String) tokenInfo.get("audience"); // audience token need to coresspond to the app corelated with auth, in the future probably frontend app
 
-                return googleClientId.equals(audience);
+                return googleFrontendClientId.equals(audience);
             }
             return false;
         } catch (Exception e) {

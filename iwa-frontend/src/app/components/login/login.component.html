@@ -31,6 +31,23 @@
           </button>
         </form>
 
+        <div class="divider-container">
+          <mat-divider></mat-divider>
+          <span class="divider-text">OR</span>
+          <mat-divider></mat-divider>
+        </div>
+
+        <div class="oauth-container">
+          <div #googleButton class="google-signin-button"></div>
+
+          @if (isGoogleLoading) {
+            <div class="oauth-loading">
+              <mat-spinner diameter="30"></mat-spinner>
+              <span>Signing in with Google...</span>
+            </div>
+          }
+        </div>
+
         <div class="signup-link">
           Don't have an account?
           <a routerLink="/signup">Sign up here</a>

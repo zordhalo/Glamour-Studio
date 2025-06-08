@@ -1,19 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { OAuthService } from '../../services/oauth.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CommonModule } from '@angular/common';
 import { take } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
     RouterLink,
     MatCardModule,
@@ -21,20 +27,29 @@ import { take } from 'rxjs/operators';
     MatInputModule,
     MatButtonModule,
     MatSnackBarModule,
-    MatIconModule
+    MatIconModule,
+    MatDividerModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss']
 })
-export class SignupComponent {
+export class SignupComponent implements OnInit, AfterViewInit {
+  @ViewChild('googleButton', { static: false }) googleButton!: ElementRef;
+
   signupForm: FormGroup;
   errorMessage: string | null = null;
   isSubmitting = false;
+  isGoogleLoading = false;
+  isOAuthSignup = false;
+  oauthProvider: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
+    private oauthService: OAuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private snackBar: MatSnackBar
   ) {
     this.signupForm = this.fb.group({
@@ -46,31 +61,176 @@ export class SignupComponent {
     });
   }
 
+  ngOnInit(): void {
+    // Check if coming from OAuth login
+    this.route.queryParams.subscribe(params => {
+      if (params['oauth']) {
+        this.isOAuthSignup = true;
+        this.oauthProvider = params['oauth'];
+
+        // Pre-fill form with OAuth data
+        if (params['email']) {
+          this.signupForm.patchValue({
+            email: params['email'],
+            name: params['name'] || ''
+          });
+          this.signupForm.get('email')?.disable();
+        }
+
+        // Store OAuth token for later use
+        if (params['token']) {
+          sessionStorage.setItem('oauthToken', params['token']);
+        }
+
+        // Remove password requirement for OAuth signup
+        this.signupForm.get('password')?.clearValidators();
+        this.signupForm.get('password')?.updateValueAndValidity();
+      }
+    });
+
+    // Initialize Google OAuth
+    this.oauthService.initializeGoogleAuth(environment.googleClientId).catch(error => {
+      console.error('Failed to initialize Google Auth:', error);
+    });
+
+    // Subscribe to Google auth responses
+    this.oauthService.getGoogleAuthResponse().subscribe({
+      next: (response) => {
+        this.handleGoogleSignup(response);
+      },
+      error: (error) => {
+        console.error('Google auth error:', error);
+        this.showError('Google authentication failed');
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    // Only render Google button if not in OAuth signup mode
+    if (!this.isOAuthSignup) {
+      setTimeout(() => {
+        if (this.googleButton) {
+          this.oauthService.renderGoogleButton(this.googleButton.nativeElement);
+        }
+      }, 100);
+    }
+  }
+
   onSubmit(): void {
     if (this.signupForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
       this.errorMessage = null;
 
-      this.authService.signup(this.signupForm.value).pipe(take(1)).subscribe({
-        next: () => {
-          // Store email temporarily for verification page
-          localStorage.setItem('pendingVerificationEmail', this.signupForm.value.email);
+      const formValue = this.signupForm.getRawValue(); // Get all values including disabled fields
 
-          this.snackBar.open('Signup successful! Please check your email for the verification code.', 'Close', {
-            duration: 5000,
-          });
-
-          // Navigate to verify-email page with email in state
-          this.router.navigate(['/verify-email'], {
-            state: { email: this.signupForm.value.email }
-          });
-        },
-        error: (err) => {
+      if (this.isOAuthSignup && this.oauthProvider === 'google') {
+        // Handle Google OAuth signup
+        const oauthToken = sessionStorage.getItem('oauthToken');
+        if (!oauthToken) {
+          this.showError('OAuth token not found. Please try again.');
           this.isSubmitting = false;
-          this.errorMessage = 'Signup failed. The email might already be in use.';
-          console.error(err);
+          return;
         }
-      });
+
+        const googleUser = {
+          accessToken: oauthToken,
+          email: formValue.email,
+          name: formValue.name,
+          givenName: formValue.name,
+          familyName: formValue.surname,
+          id: '' // Will be filled by backend
+        };
+
+        this.authService.signupWithGoogle(googleUser).subscribe({
+          next: () => {
+            sessionStorage.removeItem('oauthToken');
+            this.handleSuccessfulSignup(formValue.email);
+          },
+          error: (err) => {
+            this.isSubmitting = false;
+            this.errorMessage = 'OAuth signup failed. Please try again.';
+            console.error(err);
+          }
+        });
+      } else {
+        // Regular signup
+        this.authService.signup(formValue).pipe(take(1)).subscribe({
+          next: () => {
+            this.handleSuccessfulSignup(formValue.email);
+          },
+          error: (err) => {
+            this.isSubmitting = false;
+            this.errorMessage = 'Signup failed. The email might already be in use.';
+            console.error(err);
+          }
+        });
+      }
     }
+  }
+
+  private handleSuccessfulSignup(email: string): void {
+    localStorage.setItem('pendingVerificationEmail', email);
+
+    this.snackBar.open('Signup successful! Please check your email for the verification code.', 'Close', {
+      duration: 5000,
+    });
+
+    this.router.navigate(['/verify-email'], {
+      state: { email: email }
+    });
+  }
+
+  private handleGoogleSignup(response: any): void {
+    if (!response.credential) {
+      this.showError('No credential received from Google');
+      return;
+    }
+
+    this.isGoogleLoading = true;
+
+    // Parse the JWT token to get user info
+    const userInfo = this.oauthService.parseJwt(response.credential);
+
+    if (!userInfo) {
+      this.showError('Failed to parse Google response');
+      this.isGoogleLoading = false;
+      return;
+    }
+
+    const googleUser = {
+      accessToken: response.credential,
+      email: userInfo.email,
+      name: userInfo.name,
+      givenName: userInfo.given_name || '',
+      familyName: userInfo.family_name || '',
+      id: userInfo.sub
+    };
+
+    this.authService.signupWithGoogle(googleUser).subscribe({
+      next: () => {
+        this.isGoogleLoading = false;
+        this.handleSuccessfulSignup(userInfo.email);
+      },
+      error: (err) => {
+        this.isGoogleLoading = false;
+        if (err.status === 409) {
+          this.showError('An account with this email already exists. Please login instead.');
+          setTimeout(() => {
+            this.router.navigate(['/login']);
+          }, 2000);
+        } else {
+          this.showError('Google signup failed. Please try again.');
+        }
+      }
+    });
+  }
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+      panelClass: ['error-snackbar']
+    });
   }
 }

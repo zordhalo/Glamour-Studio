@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, tap, take } from 'rxjs';
+import { BehaviorSubject, Observable, tap, take, throwError } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { ApiService } from './api.service';
 import { LoginResponseDto } from '../interfaces/auth.dto';
@@ -50,6 +50,28 @@ export class AuthService {
 
     this.pendingRequests.set(key, request$);
     return request$;
+  }
+
+  signupWithGoogle(googleUser: any): Observable<any> {
+    return this.apiService.post('auth/signup/google', googleUser);
+  }
+
+  signupWithFacebook(facebookUser: any): Observable<any> {
+    return this.apiService.post('auth/signup/facebook', facebookUser);
+  }
+
+  authenticateWithOAuth(provider: string, accessToken: string): Observable<LoginResponseDto> {
+    return this.apiService.post<LoginResponseDto>('auth/oauth/authenticate', {
+      provider,
+      accessToken
+    }).pipe(
+      tap((response) => {
+        if (response.token) {
+          localStorage.setItem('jwt_token', response.token);
+          this.loggedIn.next(true);
+        }
+      })
+    );
   }
 
   verifyEmail(verificationData: { email: string; verificationCode: string }): Observable<any> {
