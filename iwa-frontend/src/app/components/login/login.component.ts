@@ -1,10 +1,11 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { OAuthService } from '../../services/oauth.service';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
+import { Subscription } from 'rxjs';
 
 // Material Modules
 import { MatCardModule } from '@angular/material/card';
@@ -35,13 +36,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit, AfterViewInit {
+export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('googleButton', { static: false }) googleButton!: ElementRef;
 
   loginForm: FormGroup;
   errorMessage: string | null = null;
   isSubmitting = false;
   isGoogleLoading = false;
+  private googleSub!: Subscription;
 
   constructor(
     private fb: FormBuilder,
@@ -57,16 +59,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // Initialize Google OAuth
-    this.oauthService.initializeGoogleAuth(environment.googleClientId).catch(error => {
-      console.error('Failed to initialize Google Auth:', error);
-    });
-
     // Subscribe to Google auth responses
-    this.oauthService.getGoogleAuthResponse().subscribe({
-      next: (response) => {
-        this.handleGoogleLogin(response);
-      },
+    this.googleSub = this.oauthService.getGoogleAuthResponse().subscribe({
+      next: (response) => this.handleGoogleLogin(response),
       error: (error) => {
         console.error('Google auth error:', error);
         this.showError('Google authentication failed');
@@ -74,13 +69,23 @@ export class LoginComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void {
-    // Render the Google button after the view is initialized
-    setTimeout(() => {
+  async ngAfterViewInit(): Promise<void> {
+    // Wait for the Google Auth service to be initialized, then render the button.
+    try {
+      await this.oauthService.initializeGoogleAuth(environment.googleClientId);
       if (this.googleButton) {
         this.oauthService.renderGoogleButton(this.googleButton.nativeElement);
       }
-    }, 100);
+    } catch (error) {
+      console.error('Failed to initialize or render Google Button:', error);
+      this.showError('Could not load Google Sign-In.');
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.googleSub) {
+      this.googleSub.unsubscribe();
+    }
   }
 
   onSubmit(): void {
@@ -106,8 +111,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
     }
 
     this.isGoogleLoading = true;
-
-    // Parse the JWT token to get user info
     const userInfo = this.oauthService.parseJwt(response.credential);
 
     if (!userInfo) {
@@ -116,16 +119,12 @@ export class LoginComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    // Note: Google One Tap returns an ID token, not an access token
-    // The backend might need to be adjusted to handle ID tokens
-    // For now, we'll send the credential as the access token
     this.authService.authenticateWithOAuth('google', response.credential).subscribe({
       next: (loginResponse) => {
         this.isGoogleLoading = false;
         if (loginResponse.token) {
           this.router.navigate(['/my-appointments']);
         } else {
-          // User not found, redirect to signup
           this.router.navigate(['/signup'], {
             queryParams: {
               oauth: 'google',
@@ -139,7 +138,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
       error: (err) => {
         this.isGoogleLoading = false;
         if (err.status === 404) {
-          // User not found, redirect to signup with Google info
           this.router.navigate(['/signup'], {
             queryParams: {
               oauth: 'google',

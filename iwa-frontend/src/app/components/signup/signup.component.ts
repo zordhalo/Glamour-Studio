@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
-import { take } from 'rxjs/operators';
+import { Subscription, take } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -34,7 +34,7 @@ import { environment } from '../../../environments/environment';
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss']
 })
-export class SignupComponent implements OnInit, AfterViewInit {
+export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('googleButton', { static: false }) googleButton!: ElementRef;
 
   signupForm: FormGroup;
@@ -43,6 +43,7 @@ export class SignupComponent implements OnInit, AfterViewInit {
   isGoogleLoading = false;
   isOAuthSignup = false;
   oauthProvider: string | null = null;
+  private googleSub!: Subscription;
 
   constructor(
     private fb: FormBuilder,
@@ -68,7 +69,6 @@ export class SignupComponent implements OnInit, AfterViewInit {
         this.isOAuthSignup = true;
         this.oauthProvider = params['oauth'];
 
-        // Pre-fill form with OAuth data
         if (params['email']) {
           this.signupForm.patchValue({
             email: params['email'],
@@ -77,27 +77,18 @@ export class SignupComponent implements OnInit, AfterViewInit {
           this.signupForm.get('email')?.disable();
         }
 
-        // Store OAuth token for later use
         if (params['token']) {
           sessionStorage.setItem('oauthToken', params['token']);
         }
 
-        // Remove password requirement for OAuth signup
         this.signupForm.get('password')?.clearValidators();
         this.signupForm.get('password')?.updateValueAndValidity();
       }
     });
 
-    // Initialize Google OAuth
-    this.oauthService.initializeGoogleAuth(environment.googleClientId).catch(error => {
-      console.error('Failed to initialize Google Auth:', error);
-    });
-
     // Subscribe to Google auth responses
-    this.oauthService.getGoogleAuthResponse().subscribe({
-      next: (response) => {
-        this.handleGoogleSignup(response);
-      },
+    this.googleSub = this.oauthService.getGoogleAuthResponse().subscribe({
+      next: (response) => this.handleGoogleSignup(response),
       error: (error) => {
         console.error('Google auth error:', error);
         this.showError('Google authentication failed');
@@ -105,14 +96,23 @@ export class SignupComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void {
-    // Only render Google button if not in OAuth signup mode
+  async ngAfterViewInit(): Promise<void> {
     if (!this.isOAuthSignup) {
-      setTimeout(() => {
+      try {
+        await this.oauthService.initializeGoogleAuth(environment.googleClientId);
         if (this.googleButton) {
           this.oauthService.renderGoogleButton(this.googleButton.nativeElement);
         }
-      }, 100);
+      } catch (error) {
+        console.error('Failed to initialize or render Google Button:', error);
+        this.showError('Could not load Google Sign-In.');
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.googleSub) {
+      this.googleSub.unsubscribe();
     }
   }
 
@@ -120,11 +120,9 @@ export class SignupComponent implements OnInit, AfterViewInit {
     if (this.signupForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
       this.errorMessage = null;
-
-      const formValue = this.signupForm.getRawValue(); // Get all values including disabled fields
+      const formValue = this.signupForm.getRawValue();
 
       if (this.isOAuthSignup && this.oauthProvider === 'google') {
-        // Handle Google OAuth signup
         const oauthToken = sessionStorage.getItem('oauthToken');
         if (!oauthToken) {
           this.showError('OAuth token not found. Please try again.');
@@ -138,13 +136,13 @@ export class SignupComponent implements OnInit, AfterViewInit {
           name: formValue.name,
           givenName: formValue.name,
           familyName: formValue.surname,
-          id: '' // Will be filled by backend
+          id: ''
         };
 
         this.authService.signupWithGoogle(googleUser).subscribe({
           next: () => {
             sessionStorage.removeItem('oauthToken');
-            this.handleSuccessfulSignup(formValue.email);
+            this.handleSuccessfulSignup(formValue.email, true);
           },
           error: (err) => {
             this.isSubmitting = false;
@@ -153,7 +151,6 @@ export class SignupComponent implements OnInit, AfterViewInit {
           }
         });
       } else {
-        // Regular signup
         this.authService.signup(formValue).pipe(take(1)).subscribe({
           next: () => {
             this.handleSuccessfulSignup(formValue.email);
@@ -168,16 +165,28 @@ export class SignupComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private handleSuccessfulSignup(email: string): void {
-    localStorage.setItem('pendingVerificationEmail', email);
-
-    this.snackBar.open('Signup successful! Please check your email for the verification code.', 'Close', {
-      duration: 5000,
-    });
-
-    this.router.navigate(['/verify-email'], {
-      state: { email: email }
-    });
+  private handleSuccessfulSignup(email: string, isGoogle: boolean = false): void {
+    if (isGoogle) {
+      // This case is for when the user was redirected from login to complete their profile
+      const token = sessionStorage.getItem('oauthToken');
+      if (token) {
+        this.authService.authenticateWithOAuth('google', token).subscribe({
+          next: () => {
+            this.snackBar.open('Profile completed! You are now logged in.', 'Close', { duration: 5000 });
+            this.router.navigate(['/my-appointments']);
+          },
+          error: () => this.router.navigate(['/login'])
+        });
+      }
+    } else {
+      localStorage.setItem('pendingVerificationEmail', email);
+      this.snackBar.open('Signup successful! Please check your email for the verification code.', 'Close', {
+        duration: 5000,
+      });
+      this.router.navigate(['/verify-email'], {
+        state: { email: email }
+      });
+    }
   }
 
   private handleGoogleSignup(response: any): void {
@@ -187,8 +196,6 @@ export class SignupComponent implements OnInit, AfterViewInit {
     }
 
     this.isGoogleLoading = true;
-
-    // Parse the JWT token to get user info
     const userInfo = this.oauthService.parseJwt(response.credential);
 
     if (!userInfo) {
@@ -208,8 +215,20 @@ export class SignupComponent implements OnInit, AfterViewInit {
 
     this.authService.signupWithGoogle(googleUser).subscribe({
       next: () => {
-        this.isGoogleLoading = false;
-        this.handleSuccessfulSignup(userInfo.email);
+        this.authService.authenticateWithOAuth('google', googleUser.accessToken).subscribe({
+          next: (loginResponse) => {
+            this.isGoogleLoading = false;
+            if(loginResponse.token) {
+              this.snackBar.open('Account created successfully! You are now logged in.', 'Close', { duration: 5000 });
+              this.router.navigate(['/my-appointments']);
+            }
+          },
+          error: () => {
+            this.isGoogleLoading = false;
+            this.showError('Account created, but automatic login failed. Please try logging in manually.');
+            this.router.navigate(['/login']);
+          }
+        });
       },
       error: (err) => {
         this.isGoogleLoading = false;

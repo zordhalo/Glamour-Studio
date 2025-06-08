@@ -100,23 +100,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .name(googleUser.getGivenName() != null ? googleUser.getGivenName() : googleUser.getName())
                 .surname(googleUser.getFamilyName() != null ? googleUser.getFamilyName() : "")
                 .email(googleUser.getEmail())
-                .phoneNum("") // Google does not provide phone number, later allow user to change their account details
-                .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
+                .phoneNum("") // Google does not provide phone number
+                .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString())) // Assign a random, unusable password
                 .role("ROLE_USER")
                 .build();
 
-        // Google users are automatically verified since they're authenticated through Google
+        // Google users are automatically verified
         user.setEnabled(true);
 
-        String resetCode = generateVerificationCode();
-        user.setPasswordResetCode(resetCode);
-        user.setPasswordResetCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
-
-        sendPasswordResetEmailToUser(user);
+        // We will not send a password reset email immediately.
+        // The user can choose to create a password from their account settings later.
+        // For now, they can only log in using SSO
 
         AppUser saved = userRepository.save(user);
+
+        // Return null for the verification code as it's not needed.
         return new UserSignUpResponseDto(saved.getAppUserId(), saved.getName(), saved.getSurname(),
-                saved.getEmail(), saved.getPhoneNum(), saved.getRole(), resetCode);
+                saved.getEmail(), saved.getPhoneNum(), saved.getRole(), null);
     }
 
     @Override
