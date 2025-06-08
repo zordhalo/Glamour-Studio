@@ -23,7 +23,7 @@ $theme: mat.define-theme((
   )
 ));
 
-// Apply the theme to the html element
+
 :root {
   @include mat.all-component-themes($theme);
 }
@@ -249,7 +249,7 @@ select:focus {
   /* Color variables for components */
   --surface: #ffffff;
   --surface-light: #f8f9fa;
-  --primary-color: #2196f3;
+  --primary-color: #0e517a;
   --primary-light: #64b5f6;
   --primary-dark: #1976d2;
   --secondary-color: #4caf50;

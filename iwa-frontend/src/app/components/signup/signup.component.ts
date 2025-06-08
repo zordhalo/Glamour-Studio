@@ -43,6 +43,7 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
   isGoogleLoading = false;
   isOAuthSignup = false;
   oauthProvider: string | null = null;
+  hidePassword = true;
   private googleSub!: Subscription;
 
   constructor(
@@ -54,10 +55,10 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar
   ) {
     this.signupForm = this.fb.group({
-      name: ['', [Validators.required]],
-      surname: ['', [Validators.required]],
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      surname: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      phoneNum: ['', [Validators.required]],
+      phoneNum: ['', [Validators.required, Validators.pattern(/^[\d\s\-\+\(\)]+$/)]],
       password: ['', [Validators.required, Validators.minLength(8)]],
     });
   }
@@ -117,10 +118,29 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onSubmit(): void {
+    // Mark all fields as touched to show validation errors
+    if (this.signupForm.invalid) {
+      Object.keys(this.signupForm.controls).forEach(key => {
+        this.signupForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
+
     if (this.signupForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
       this.errorMessage = null;
       const formValue = this.signupForm.getRawValue();
+
+      // Clean up the form values
+      const signupData = {
+        name: formValue.name.trim(),
+        surname: formValue.surname.trim(),
+        email: formValue.email.trim(),
+        phoneNum: formValue.phoneNum.trim(),
+        password: formValue.password
+      };
+
+      console.log('Attempting signup with email:', signupData.email);
 
       if (this.isOAuthSignup && this.oauthProvider === 'google') {
         const oauthToken = sessionStorage.getItem('oauthToken');
@@ -132,17 +152,17 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
 
         const googleUser = {
           accessToken: oauthToken,
-          email: formValue.email,
-          name: formValue.name,
-          givenName: formValue.name,
-          familyName: formValue.surname,
+          email: signupData.email,
+          name: signupData.name,
+          givenName: signupData.name,
+          familyName: signupData.surname,
           id: ''
         };
 
         this.authService.signupWithGoogle(googleUser).subscribe({
           next: () => {
             sessionStorage.removeItem('oauthToken');
-            this.handleSuccessfulSignup(formValue.email, true);
+            this.handleSuccessfulSignup(signupData.email, true);
           },
           error: (err) => {
             this.isSubmitting = false;
@@ -151,18 +171,92 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         });
       } else {
-        this.authService.signup(formValue).pipe(take(1)).subscribe({
-          next: () => {
-            this.handleSuccessfulSignup(formValue.email);
+        this.authService.signup(signupData).pipe(take(1)).subscribe({
+          next: (response) => {
+            console.log('Signup successful:', response);
+            this.handleSuccessfulSignup(signupData.email);
           },
           error: (err) => {
+            console.error('Signup error:', err);
             this.isSubmitting = false;
-            this.errorMessage = 'Signup failed. The email might already be in use.';
-            console.error(err);
+
+            if (err.status === 409 || err.error?.message?.includes('already registered')) {
+              this.errorMessage = 'An account with this email already exists. Please login instead.';
+              setTimeout(() => {
+                this.router.navigate(['/login']);
+              }, 3000);
+            } else if (err.status === 400) {
+              this.errorMessage = err.error?.message || 'Invalid signup data. Please check your information.';
+            } else if (err.status === 0) {
+              this.errorMessage = 'Cannot connect to server. Please check if the backend is running.';
+            } else {
+              this.errorMessage = err.error?.message || 'Signup failed. Please try again.';
+            }
+
+            this.showError(this.errorMessage ?? 'An unknown error occurred.');
           }
         });
       }
     }
+  }
+
+  togglePasswordVisibility(): void {
+    this.hidePassword = !this.hidePassword;
+  }
+
+  getNameErrorMessage(): string {
+    const nameControl = this.signupForm.get('name');
+    if (nameControl?.hasError('required')) {
+      return 'First name is required';
+    }
+    if (nameControl?.hasError('minlength')) {
+      return 'First name must be at least 2 characters';
+    }
+    return '';
+  }
+
+  getSurnameErrorMessage(): string {
+    const surnameControl = this.signupForm.get('surname');
+    if (surnameControl?.hasError('required')) {
+      return 'Last name is required';
+    }
+    if (surnameControl?.hasError('minlength')) {
+      return 'Last name must be at least 2 characters';
+    }
+    return '';
+  }
+
+  getEmailErrorMessage(): string {
+    const emailControl = this.signupForm.get('email');
+    if (emailControl?.hasError('required')) {
+      return 'Email is required';
+    }
+    if (emailControl?.hasError('email')) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  }
+
+  getPhoneErrorMessage(): string {
+    const phoneControl = this.signupForm.get('phoneNum');
+    if (phoneControl?.hasError('required')) {
+      return 'Phone number is required';
+    }
+    if (phoneControl?.hasError('pattern')) {
+      return 'Please enter a valid phone number';
+    }
+    return '';
+  }
+
+  getPasswordErrorMessage(): string {
+    const passwordControl = this.signupForm.get('password');
+    if (passwordControl?.hasError('required')) {
+      return 'Password is required';
+    }
+    if (passwordControl?.hasError('minlength')) {
+      return 'Password must be at least 8 characters';
+    }
+    return '';
   }
 
   private handleSuccessfulSignup(email: string, isGoogle: boolean = false): void {
@@ -182,6 +276,9 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
       localStorage.setItem('pendingVerificationEmail', email);
       this.snackBar.open('Signup successful! Please check your email for the verification code.', 'Close', {
         duration: 5000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+        panelClass: ['success-snackbar']
       });
       this.router.navigate(['/verify-email'], {
         state: { email: email }

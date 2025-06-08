@@ -43,6 +43,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   errorMessage: string | null = null;
   isSubmitting = false;
   isGoogleLoading = false;
+  hidePassword = true;
   private googleSub!: Subscription;
 
   constructor(
@@ -89,19 +90,77 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onSubmit(): void {
+    // Mark all fields as touched to show validation errors
+    if (this.loginForm.invalid) {
+      Object.keys(this.loginForm.controls).forEach(key => {
+        this.loginForm.get(key)?.markAsTouched();
+      });
+      return;
+    }
+
     if (this.loginForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
       this.errorMessage = null;
 
-      this.authService.login(this.loginForm.value).subscribe({
-        next: () => this.router.navigate(['/my-appointments']),
+      const credentials = {
+        email: this.loginForm.get('email')?.value.trim(),
+        password: this.loginForm.get('password')?.value
+      };
+
+      console.log('Attempting login with email:', credentials.email);
+
+      this.authService.login(credentials).subscribe({
+        next: (response) => {
+          console.log('Login successful:', response);
+          this.snackBar.open('Login successful!', 'Close', {
+            duration: 3000,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+            panelClass: ['success-snackbar']
+          });
+          this.router.navigate(['/my-appointments']);
+        },
         error: (err) => {
+          console.error('Login error:', err);
           this.isSubmitting = false;
-          this.errorMessage = 'Login failed. Please check your credentials.';
-          console.error(err);
+
+          if (err.status === 401) {
+            this.errorMessage = 'Invalid email or password. Please try again.';
+          } else if (err.status === 403) {
+            this.errorMessage = 'Account not verified. Please check your email for verification code.';
+          } else if (err.status === 0) {
+            this.errorMessage = 'Cannot connect to server. Please check if the backend is running.';
+          } else {
+            this.errorMessage = err.error?.message || 'Login failed. Please try again.';
+          }
+
+          this.showError(this.errorMessage ?? 'An unknown error occurred.');
         }
       });
     }
+  }
+
+  togglePasswordVisibility(): void {
+    this.hidePassword = !this.hidePassword;
+  }
+
+  getEmailErrorMessage(): string {
+    const emailControl = this.loginForm.get('email');
+    if (emailControl?.hasError('required')) {
+      return 'Email is required';
+    }
+    if (emailControl?.hasError('email')) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  }
+
+  getPasswordErrorMessage(): string {
+    const passwordControl = this.loginForm.get('password');
+    if (passwordControl?.hasError('required')) {
+      return 'Password is required';
+    }
+    return '';
   }
 
   private handleGoogleLogin(response: any): void {
