@@ -303,24 +303,6 @@
   }
 }
 
-.work-overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(255, 255, 255, 0.95);
-  padding: 0.5rem 1rem;
-  border-radius: 10px;
-  font-weight: 600;
-  color: #333;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-
-  .image-item:hover & {
-    opacity: 1;
-  }
-}
-
 // Services Preview
 .services-preview {
   padding: 5rem 0;
