@@ -1,34 +1,24 @@
 <div class="services-container">
-  <div class="services-header">
-    <h1 class="page-title">Our Services</h1>
-    <p class="page-subtitle">Discover our range of professional beauty treatments</p>
+  <div class="section-header">
+    <h2 class="section-title">My Services</h2>
+    <p class="section-subtitle">Professional makeup services tailored to your needs</p>
   </div>
 
   <div class="services-grid">
     @for (service of services; track service.serviceId) {
-      <mat-card class="service-card glass-effect" [routerLink]="['/services', service.serviceId]">
+      <mat-card class="service-card" [routerLink]="['/services', service.serviceId]">
         <div class="service-icon">
           <mat-icon>{{ getServiceIcon(service.name) }}</mat-icon>
         </div>
-        <mat-card-header>
-          <mat-card-title>{{ service.name }}</mat-card-title>
-          <mat-card-subtitle>
-            <span class="duration">
-              <mat-icon>schedule</mat-icon>
-              {{ service.minDuration }} min
-            </span>
-            <span class="price">${{ service.price }}</span>
-          </mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <p class="service-description">{{ service.description }}</p>
-        </mat-card-content>
-        <mat-card-actions>
-          <button mat-raised-button color="primary" class="book-btn">
-            Book Now
-            <mat-icon>arrow_forward</mat-icon>
-          </button>
-        </mat-card-actions>
+        <h3>{{ service.name }}</h3>
+        <p>{{ service.description }}</p>
+        <span class="service-price">From ${{ service.price }}</span>
+        <div class="service-meta">
+          <span class="duration">
+            <mat-icon>schedule</mat-icon>
+            {{ service.minDuration }} min
+          </span>
+        </div>
       </mat-card>
     }
   </div>

@@ -245,6 +245,20 @@ select:focus {
   --border-radius: 12px;
   --border-radius-small: 8px;
   --transition: all 0.3s ease;
+
+  /* Color variables for components */
+  --surface: #ffffff;
+  --surface-light: #f8f9fa;
+  --primary-color: #2196f3;
+  --primary-light: #64b5f6;
+  --primary-dark: #1976d2;
+  --secondary-color: #4caf50;
+  --secondary-dark: #388e3c;
+  --accent-warm: #ff9800;
+  --accent-coral: #ff5722;
+  --success: #4caf50;
+  --text-primary: #212121;
+  --text-secondary: #757575;
 }
 
 /* Glass effect utility class */
