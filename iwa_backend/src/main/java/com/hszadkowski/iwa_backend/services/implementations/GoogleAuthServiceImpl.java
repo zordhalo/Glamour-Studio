@@ -27,7 +27,8 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     public boolean validateGoogleToken(String token) {
         // First try to validate as ID token (from Google Identity Services)
         if (token.contains(".")) {
-            return validateIdToken(token);
+           return validateIdToken(token);
+            //return validateAccessToken(token);
         }
         // Otherwise validate as access token
         return validateAccessToken(token);
@@ -81,7 +82,8 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     public GoogleUserDto getGoogleUserInfo(String token) {
         // Check if it's an ID token or access token
         if (token.contains(".")) {
-            return getUserInfoFromIdToken(token);
+           return getUserInfoFromIdToken(token);
+            //return getUserInfoFromAccessToken(token);
         }
         return getUserInfoFromAccessToken(token);
     }

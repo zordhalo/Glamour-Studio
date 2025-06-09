@@ -3,44 +3,83 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 2rem;
+  position: relative;
+  overflow: hidden;
+
+  // Add subtle gradient overlay like landing page
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255, 182, 193, 0.1), rgba(255, 160, 122, 0.1));
+    pointer-events: none;
+  }
 }
 
 .signup-container {
   width: 100%;
-  max-width: 520px;
+  max-width: 560px;
   padding: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .glass-effect {
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 30px;
+  padding: 3rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+  }
 }
 
 mat-card-header {
   justify-content: center;
-  margin-bottom: 30px;
+  margin-bottom: 2.5rem;
 }
 
 mat-card-title {
-  font-size: 28px;
-  font-weight: 500;
-  color: #fff;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  position: relative;
+
+  // Optional: Add a subtle gradient effect that's more visible
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border-radius: 2px;
+  }
 }
 
 form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 1.5rem;
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
@@ -59,33 +98,73 @@ mat-form-field {
   width: 100%;
 
   ::ng-deep {
+    .mat-mdc-text-field-wrapper {
+      background: #f5f7fa;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
     .mat-mdc-form-field-flex {
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 8px;
+      background: transparent;
     }
 
     .mat-mdc-form-field-focus-overlay {
       background: transparent;
     }
+
+    // Focus state
+    .mat-mdc-form-field.mat-focused {
+      .mat-mdc-text-field-wrapper {
+        background: white;
+        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+      }
+    }
+
+    // Label styling
+    .mat-mdc-floating-label {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+      color: #667eea;
+    }
+
+    // Input text
+    .mat-mdc-input-element {
+      color: #333;
+      font-size: 1rem;
+    }
+
+    // Error state
+    .mat-mdc-form-field.mat-form-field-invalid {
+      .mat-mdc-text-field-wrapper {
+        box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.3);
+      }
+    }
   }
 }
 
 .submit-button {
-  height: 48px;
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 8px;
-  background: linear-gradient(45deg, var(--primary-color) 30%, var(--accent-color) 90%);
+  height: 52px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
   color: white;
+  border: none;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.75rem;
+  text-transform: none;
+  letter-spacing: 0.5px;
 
   &:hover:not([disabled]) {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(45deg, #5a6fe5, #6d42a1);
   }
 
   &[disabled] {
@@ -101,105 +180,153 @@ mat-form-field {
 .oauth-notice {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px;
-  margin-bottom: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  border-radius: 12px;
+  color: #333;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  font-size: 0.9rem;
+  line-height: 1.5;
 
   mat-icon {
     font-size: 20px;
     width: 20px;
     height: 20px;
+    color: #667eea;
+    flex-shrink: 0;
   }
 }
 
 .divider-container {
   display: flex;
   align-items: center;
-  margin: 30px 0 20px;
+  margin: 2rem 0 1.5rem;
 
   mat-divider {
     flex: 1;
+    background-color: rgba(0, 0, 0, 0.1);
   }
 
   .divider-text {
-    padding: 0 15px;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 14px;
+    padding: 0 1rem;
+    color: #666;
+    font-size: 0.875rem;
+    font-weight: 500;
   }
 }
 
 .oauth-container {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 
   .google-signin-button {
     width: 100%;
     display: flex;
     justify-content: center;
+
+    ::ng-deep div {
+      width: 100% !important;
+      max-width: 100% !important;
+
+      // Style the Google button
+      .nsm7Bb-HzV7m-LgbsSe {
+        width: 100% !important;
+        height: 48px !important;
+        border-radius: 12px !important;
+        transition: all 0.3s ease !important;
+
+        &:hover {
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        }
+      }
+    }
   }
 
   .oauth-loading {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 10px;
-    color: rgba(255, 255, 255, 0.9);
+    gap: 0.75rem;
+    padding: 1rem;
+    color: #667eea;
+    font-weight: 500;
   }
 }
 
 .error-message {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #ff6b6b;
-  text-align: center;
-  margin: 10px 0;
-  font-size: 14px;
-  background: rgba(255, 107, 107, 0.1);
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 107, 107, 0.3);
+  gap: 0.5rem;
+  color: #dc3545;
+  text-align: left;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+  background: rgba(220, 53, 69, 0.1);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  animation: shake 0.3s ease-in-out;
 
   mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
   }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 
 .login-link {
   text-align: center;
-  margin-top: 20px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
+  margin-top: 1.5rem;
+  color: #666;
+  font-size: 0.9rem;
 
   .link-text {
-    color: #fff;
-    font-weight: 500;
+    color: #667eea;
+    font-weight: 600;
     text-decoration: none;
     transition: all 0.3s ease;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #667eea;
+      transition: width 0.3s ease;
+    }
 
     &:hover {
-      text-decoration: underline;
+      color: #5a6fe5;
+
+      &::after {
+        width: 100%;
+      }
     }
   }
 }
 
 .fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -207,15 +334,63 @@ mat-form-field {
   }
 }
 
-// Add to global styles if needed
+// Success/Error snackbar customization
 ::ng-deep {
   .error-snackbar {
-    background: #ff6b6b !important;
+    background: #dc3545 !important;
     color: white !important;
+    border-radius: 12px !important;
+
+    .mat-mdc-snack-bar-label {
+      font-weight: 500;
+    }
   }
 
   .success-snackbar {
     background: #4caf50 !important;
     color: white !important;
+    border-radius: 12px !important;
+
+    .mat-mdc-snack-bar-label {
+      font-weight: 500;
+    }
+  }
+
+  // Loading spinner
+  .mat-mdc-progress-spinner {
+    circle {
+      stroke: #667eea !important;
+    }
   }
 }
+
+// Responsive design
+@media (max-width: 768px) {
+  .signup-container {
+    padding: 1rem;
+  }
+
+  .glass-effect {
+    padding: 2rem;
+  }
+
+  mat-card-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .glass-effect {
+    padding: 1.5rem;
+    border-radius: 20px;
+  }
+
+  mat-card-title {
+    font-size: 1.75rem;
+  }
+
+  .form-row {
+    gap: 1rem;
+  }
+}
+
