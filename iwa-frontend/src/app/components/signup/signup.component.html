@@ -5,46 +5,108 @@
         <mat-card-title>Create Account</mat-card-title>
       </mat-card-header>
       <mat-card-content>
+        @if (isOAuthSignup) {
+          <div class="oauth-notice">
+            <mat-icon>info</mat-icon>
+            <span>Complete your profile to finish signing up with {{ oauthProvider }}</span>
+          </div>
+        }
+
         <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
           <div class="form-row">
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline" class="half-width">
               <mat-label>First Name</mat-label>
-              <input matInput formControlName="name" required />
+              <input matInput
+                     formControlName="name"
+                     placeholder="Enter your first name"
+                     autocomplete="given-name"
+                     required />
               <mat-icon matPrefix>person</mat-icon>
+              @if (signupForm.get('name')?.touched && signupForm.get('name')?.errors) {
+                <mat-error>{{ getNameErrorMessage() }}</mat-error>
+              }
             </mat-form-field>
 
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline" class="half-width">
               <mat-label>Last Name</mat-label>
-              <input matInput formControlName="surname" required />
+              <input matInput
+                     formControlName="surname"
+                     placeholder="Enter your last name"
+                     autocomplete="family-name"
+                     required />
               <mat-icon matPrefix>person</mat-icon>
+              @if (signupForm.get('surname')?.touched && signupForm.get('surname')?.errors) {
+                <mat-error>{{ getSurnameErrorMessage() }}</mat-error>
+              }
             </mat-form-field>
           </div>
 
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" class="full-width">
             <mat-label>Email</mat-label>
-            <input matInput formControlName="email" type="email" required />
+            <input matInput
+                   formControlName="email"
+                   type="email"
+                   placeholder="Enter your email"
+                   autocomplete="email"
+                   required />
             <mat-icon matPrefix>email</mat-icon>
+            @if (signupForm.get('email')?.touched && signupForm.get('email')?.errors) {
+              <mat-error>{{ getEmailErrorMessage() }}</mat-error>
+            }
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" class="full-width">
             <mat-label>Phone Number</mat-label>
-            <input matInput formControlName="phoneNum" required />
+            <input matInput
+                   formControlName="phoneNum"
+                   placeholder="Enter your phone number"
+                   autocomplete="tel"
+                   required />
             <mat-icon matPrefix>phone</mat-icon>
+            @if (signupForm.get('phoneNum')?.touched && signupForm.get('phoneNum')?.errors) {
+              <mat-error>{{ getPhoneErrorMessage() }}</mat-error>
+            }
           </mat-form-field>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Password</mat-label>
-            <input matInput formControlName="password" type="password" required />
-            <mat-icon matPrefix>lock</mat-icon>
-            <mat-hint>Minimum 8 characters</mat-hint>
-          </mat-form-field>
-
-          @if (errorMessage) {
-            <p class="error-message">{{ errorMessage }}</p>
+          @if (!isOAuthSignup) {
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Password</mat-label>
+              <input matInput
+                     formControlName="password"
+                     [type]="hidePassword ? 'password' : 'text'"
+                     placeholder="Enter your password"
+                     autocomplete="new-password"
+                     required />
+              <mat-icon matPrefix>lock</mat-icon>
+              <button mat-icon-button
+                      matSuffix
+                      (click)="togglePasswordVisibility()"
+                      [attr.aria-label]="'Hide password'"
+                      [attr.aria-pressed]="hidePassword"
+                      type="button">
+                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-hint>Minimum 8 characters</mat-hint>
+              @if (signupForm.get('password')?.touched && signupForm.get('password')?.errors) {
+                <mat-error>{{ getPasswordErrorMessage() }}</mat-error>
+              }
+            </mat-form-field>
           }
 
-          <button mat-raised-button color="primary" type="submit" [disabled]="!signupForm.valid || isSubmitting">
+          @if (errorMessage) {
+            <div class="error-message mat-error">
+              <mat-icon>error</mat-icon>
+              {{ errorMessage }}
+            </div>
+          }
+
+          <button mat-raised-button
+                  color="primary"
+                  type="submit"
+                  class="full-width submit-button"
+                  [disabled]="isSubmitting">
             @if (isSubmitting) {
+              <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
               Creating Account...
             } @else {
               Create Account
@@ -52,9 +114,28 @@
           </button>
         </form>
 
+        @if (!isOAuthSignup) {
+          <div class="divider-container">
+            <mat-divider></mat-divider>
+            <span class="divider-text">OR</span>
+            <mat-divider></mat-divider>
+          </div>
+
+          <div class="oauth-container">
+            <div #googleButton class="google-signin-button"></div>
+
+            @if (isGoogleLoading) {
+              <div class="oauth-loading">
+                <mat-spinner diameter="30"></mat-spinner>
+                <span>Signing up with Google...</span>
+              </div>
+            }
+          </div>
+        }
+
         <div class="login-link">
           Already have an account?
-          <a routerLink="/login">Sign in here</a>
+          <a routerLink="/login" class="link-text">Sign in here</a>
         </div>
       </mat-card-content>
     </mat-card>
