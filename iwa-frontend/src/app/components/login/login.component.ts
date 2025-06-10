@@ -118,7 +118,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
             verticalPosition: 'top',
             panelClass: ['success-snackbar']
           });
-          this.router.navigate(['/my-appointments']);
+          this.router.navigate(['/dashboard']);
         },
         error: (err) => {
           console.error('Login error:', err);
@@ -182,7 +182,7 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (loginResponse) => {
         this.isGoogleLoading = false;
         if (loginResponse.token) {
-          this.router.navigate(['/my-appointments']);
+          this.router.navigate(['/dashboard']);
         } else {
           this.router.navigate(['/signup'], {
             queryParams: {

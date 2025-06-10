@@ -174,7 +174,7 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
                     verticalPosition: 'top',
                     panelClass: ['success-snackbar']
                   });
-                  this.router.navigate(['/my-appointments']);
+                  this.router.navigate(['/dashboard']);
                 } else {
                   this.showError('Account created but login failed. Please try logging in manually.');
                   this.router.navigate(['/login']);
@@ -337,7 +337,7 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
             this.isGoogleLoading = false;
             if(loginResponse.token) {
               this.snackBar.open('Account created successfully! You are now logged in.', 'Close', { duration: 5000 });
-              this.router.navigate(['/my-appointments']);
+              this.router.navigate(['/dashboard']);
             }
           },
           error: () => {

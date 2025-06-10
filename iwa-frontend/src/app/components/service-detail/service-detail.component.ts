@@ -78,7 +78,7 @@ export class ServiceDetailComponent implements OnInit {
         this.snackBar.open('Appointment booked successfully!', 'Close', {
           duration: 3000,
         });
-        this.router.navigate(['/my-appointments']);
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         this.snackBar.open('Failed to book appointment. The slot may no longer be available.', 'Close', {
