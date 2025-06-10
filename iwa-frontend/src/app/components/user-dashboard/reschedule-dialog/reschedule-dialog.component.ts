@@ -66,26 +66,63 @@ export class RescheduleDialogComponent implements OnInit {
     const currentDate = new Date(this.data.appointment.scheduledAt);
     this.rescheduleForm.patchValue({ date: currentDate });
     this.selectedDate.set(currentDate);
+    // Load slots for the current date
+    this.loadAvailableSlots(currentDate);
   }
 
   onDateChange(date: Date | null): void {
     if (date) {
       this.selectedDate.set(date);
+      // Reset slot selection when date changes
+      this.rescheduleForm.patchValue({ slotId: null });
       this.loadAvailableSlots(date);
     }
   }
 
   loadAvailableSlots(date: Date): void {
     this.isLoading.set(true);
-    const dateStr = date.toISOString().split('T')[0];
 
-    this.apiService.get<AvailabilitySlotResponseDto[]>(`availability/slots/date/${dateStr}`).subscribe({
+    // Check if we have a serviceId
+    if (!this.data.appointment.serviceId) {
+      console.error('No serviceId found for appointment');
+      this.availableSlots.set([]);
+      this.isLoading.set(false);
+      return;
+    }
+
+    // Set start time to beginning of selected date
+    const startTime = new Date(date);
+    startTime.setHours(0, 0, 0, 0);
+
+    // Set end time to end of selected date
+    const endTime = new Date(date);
+    endTime.setHours(23, 59, 59, 999);
+
+    // Build query parameters
+    const params = new URLSearchParams({
+      serviceId: this.data.appointment.serviceId.toString(),
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString()
+    });
+
+    console.log('Fetching availability slots with params:', {
+      serviceId: this.data.appointment.serviceId,
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString()
+    });
+
+    this.apiService.get<AvailabilitySlotResponseDto[]>(`availability?${params.toString()}`).subscribe({
       next: (slots) => {
-        this.availableSlots.set(slots);
+        console.log('Received slots:', slots);
+        // Filter out already booked slots
+        const availableSlots = slots.filter(slot => !slot.isBooked);
+        console.log('Available slots after filtering:', availableSlots);
+        this.availableSlots.set(availableSlots);
         this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Failed to load slots', err);
+        this.availableSlots.set([]);
         this.isLoading.set(false);
       }
     });
