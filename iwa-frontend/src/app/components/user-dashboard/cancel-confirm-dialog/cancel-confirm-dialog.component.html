@@ -1,47 +1,69 @@
-<h2 mat-dialog-title class="dialog-title">
-  <mat-icon class="warning-icon">warning</mat-icon>
-  Cancel Appointment
-</h2>
+<div class="dialog-container">
+  <div class="dialog-header">
+    <div class="icon-wrapper warning">
+      <mat-icon>warning_amber</mat-icon>
+    </div>
+    <h2 mat-dialog-title>Cancel Appointment?</h2>
+  </div>
 
-<mat-dialog-content class="dialog-content">
-  <p class="warning-message">
-    Are you sure you want to cancel this appointment?
-  </p>
+  <mat-dialog-content class="dialog-content">
+    <p class="confirmation-text">
+      Are you sure you want to cancel your appointment? This action cannot be undone.
+    </p>
 
-  <div class="appointment-card">
-    <h3>{{ data.appointment.serviceName }}</h3>
-    <div class="appointment-details">
-      <div class="detail-row">
-        <mat-icon>event</mat-icon>
-        <span>{{ formatDate(data.appointment.scheduledAt) }}</span>
+    <div class="appointment-summary">
+      <div class="summary-header">
+        <mat-icon>spa</mat-icon>
+        <h3>{{ data.appointment.serviceName }}</h3>
       </div>
-      <div class="detail-row">
-        <mat-icon>access_time</mat-icon>
-        <span>{{ formatTime(data.appointment.scheduledAt) }}</span>
-      </div>
-      <div class="detail-row">
-        <mat-icon>location_on</mat-icon>
-        <span>{{ data.appointment.location }}</span>
+
+      <div class="summary-details">
+        <div class="detail-item">
+          <mat-icon>calendar_today</mat-icon>
+          <div class="detail-content">
+            <span class="detail-label">Date</span>
+            <span class="detail-value">{{ formatDate(data.appointment.scheduledAt) }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <mat-icon>access_time</mat-icon>
+          <div class="detail-content">
+            <span class="detail-label">Time</span>
+            <span class="detail-value">{{ formatTime(data.appointment.scheduledAt) }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <mat-icon>location_on</mat-icon>
+          <div class="detail-content">
+            <span class="detail-label">Location</span>
+            <span class="detail-value">{{ data.appointment.location }}</span>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="cancellation-policy">
-    <mat-icon>info</mat-icon>
-    <p>
-      <strong>Cancellation Policy:</strong> 
-      Please note that cancellations made less than 24 hours before your appointment 
-      may be subject to a cancellation fee.
-    </p>
-  </div>
-</mat-dialog-content>
+    <div class="policy-notice">
+      <mat-icon>info</mat-icon>
+      <div class="policy-content">
+        <h4>Cancellation Policy</h4>
+        <p>
+          Cancellations made less than 24 hours before your appointment may be subject to a cancellation fee.
+          Please review our full cancellation policy for more details.
+        </p>
+      </div>
+    </div>
+  </mat-dialog-content>
 
-<mat-dialog-actions class="dialog-actions">
-  <button mat-button (click)="onCancel()">
-    Keep Appointment
-  </button>
-  <button mat-raised-button color="warn" (click)="onConfirm()">
-    <mat-icon>cancel</mat-icon>
-    Yes, Cancel Appointment
-  </button>
-</mat-dialog-actions>
+  <mat-dialog-actions class="dialog-actions">
+    <button mat-stroked-button class="keep-button" (click)="onCancel()">
+      <mat-icon>close</mat-icon>
+      Keep Appointment
+    </button>
+    <button mat-flat-button class="cancel-button" (click)="onConfirm()">
+      <mat-icon>cancel</mat-icon>
+      Yes, Cancel It
+    </button>
+  </mat-dialog-actions>
+</div>

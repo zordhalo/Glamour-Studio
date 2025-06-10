@@ -88,18 +88,6 @@ export class UserDashboardComponent implements OnInit {
     return statusIcons[status] || 'help_outline';
   }
 
-  getStatusColor(status: string): string {
-    const statusColors: { [key: string]: string } = {
-      'SCHEDULED': 'primary',
-      'CONFIRMED': 'accent',
-      'IN_PROGRESS': 'warn',
-      'COMPLETED': 'success',
-      'CANCELLED': 'error',
-      'NO_SHOW': 'warn'
-    };
-    return statusColors[status] || '';
-  }
-
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -121,8 +109,7 @@ export class UserDashboardComponent implements OnInit {
     const today = new Date();
     const appointmentDate = new Date(date);
     const diffTime = appointmentDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
   canCancel(appointment: AppointmentResponseDto): boolean {

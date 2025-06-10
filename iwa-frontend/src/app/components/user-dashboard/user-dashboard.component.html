@@ -2,12 +2,13 @@
   <div class="dashboard-header">
     <div class="header-content">
       <h1 class="dashboard-title">
+        <mat-icon class="title-icon">spa</mat-icon>
         My Beauty <span class="gradient-text">Dashboard</span>
       </h1>
-      <p class="dashboard-subtitle">Manage your appointments and beauty journey</p>
+      <p class="dashboard-subtitle">Track and manage your beauty appointments with ease</p>
     </div>
-    <button mat-raised-button color="primary" class="book-button" (click)="bookNewAppointment()">
-      <mat-icon>add</mat-icon>
+    <button mat-raised-button class="book-button" (click)="bookNewAppointment()">
+      <mat-icon>add_circle</mat-icon>
       Book New Appointment
     </button>
   </div>
@@ -21,20 +22,25 @@
     <mat-tab-group [selectedIndex]="selectedTab()" (selectedIndexChange)="selectedTab.set($event)" class="appointments-tabs">
       <mat-tab>
         <ng-template mat-tab-label>
-          <mat-icon class="tab-icon">event</mat-icon>
-          Upcoming
-          @if (upcomingAppointments().length > 0) {
-            <span class="badge">{{ upcomingAppointments().length }}</span>
-          }
+          <div class="tab-label">
+            <mat-icon class="tab-icon">event</mat-icon>
+            <span>Upcoming</span>
+            @if (upcomingAppointments().length > 0) {
+              <span class="badge">{{ upcomingAppointments().length }}</span>
+            }
+          </div>
         </ng-template>
 
         <div class="tab-content">
           @if (upcomingAppointments().length === 0) {
             <div class="empty-state">
-              <mat-icon class="empty-icon">event_available</mat-icon>
+              <div class="empty-illustration">
+                <mat-icon class="empty-icon">event_available</mat-icon>
+              </div>
               <h3>No upcoming appointments</h3>
               <p>Ready to book your next beauty session?</p>
-              <button mat-raised-button color="primary" (click)="bookNewAppointment()">
+              <button mat-raised-button class="empty-state-button" (click)="bookNewAppointment()">
+                <mat-icon>search</mat-icon>
                 Browse Services
               </button>
             </div>
@@ -42,103 +48,108 @@
             <div class="appointments-grid">
               @for (appointment of upcomingAppointments(); track appointment.appointmentId) {
                 <mat-card class="appointment-card upcoming-card">
-                  <div class="card-header">
-                    <div class="service-info">
-                      <h3 class="service-name">{{ appointment.serviceName }}</h3>
-                      <div class="appointment-meta">
-                        <mat-icon class="meta-icon">event</mat-icon>
-                        <span>{{ formatDate(appointment.scheduledAt) }}</span>
-                      </div>
-                      <div class="appointment-meta">
-                        <mat-icon class="meta-icon">access_time</mat-icon>
-                        <span>{{ formatTime(appointment.scheduledAt) }}</span>
-                      </div>
-                    </div>
-                    <mat-chip
-                      [color]="getStatusColor(appointment.status)"
-                      class="status-chip"
-                      selected>
+                  <div class="card-ribbon">
+                    <mat-chip class="status-chip" [attr.data-status]="appointment.status">
                       <mat-icon class="chip-icon">{{ getStatusIcon(appointment.status) }}</mat-icon>
                       {{ appointment.status }}
                     </mat-chip>
                   </div>
 
-                  <mat-divider></mat-divider>
-
-                  <div class="card-content">
-                    <div class="detail-row">
-                      <mat-icon class="detail-icon">location_on</mat-icon>
-                      <span>{{ appointment.location }}</span>
-                    </div>
-                    @if (appointment.description) {
-                      <div class="detail-row">
-                        <mat-icon class="detail-icon">notes</mat-icon>
-                        <span>{{ appointment.description }}</span>
+                  <div class="card-header">
+                    <h3 class="service-name">{{ appointment.serviceName }}</h3>
+                    <div class="appointment-datetime">
+                      <div class="date-section">
+                        <mat-icon>calendar_today</mat-icon>
+                        <span>{{ formatDate(appointment.scheduledAt) }}</span>
                       </div>
-                    }
+                      <div class="time-section">
+                        <mat-icon>schedule</mat-icon>
+                        <span>{{ formatTime(appointment.scheduledAt) }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card-body">
+                    <div class="info-grid">
+                      <div class="info-item">
+                        <mat-icon>location_on</mat-icon>
+                        <div class="info-content">
+                          <span class="info-label">Location</span>
+                          <span class="info-value">{{ appointment.location }}</span>
+                        </div>
+                      </div>
+
+                      @if (appointment.serviceDurationMin) {
+                        <div class="info-item">
+                          <mat-icon>timer</mat-icon>
+                          <div class="info-content">
+                            <span class="info-label">Duration</span>
+                            <span class="info-value">{{ appointment.serviceDurationMin }} min</span>
+                          </div>
+                        </div>
+                      }
+
+                      @if (appointment.servicePrice) {
+                        <div class="info-item">
+                          <mat-icon>payments</mat-icon>
+                          <div class="info-content">
+                            <span class="info-label">Price</span>
+                            <span class="info-value">${{ appointment.servicePrice }}</span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+
                     @if (appointment.serviceDescription) {
                       <div class="service-description">
-                        {{ appointment.serviceDescription }}
+                        <p>{{ appointment.serviceDescription }}</p>
                       </div>
                     }
-                    @if (appointment.serviceDurationMin) {
-                      <div class="detail-row">
-                        <mat-icon class="detail-icon">timer</mat-icon>
-                        <span>Duration: {{ appointment.serviceDurationMin }} minutes</span>
-                      </div>
-                    }
-                    @if (appointment.servicePrice) {
-                      <div class="detail-row">
-                        <mat-icon class="detail-icon">payments</mat-icon>
-                        <span>Price: ${{ appointment.servicePrice }}</span>
-                      </div>
-                    }
+
+                    <div class="countdown-section">
+                      @if (getDaysUntil(appointment.scheduledAt) === 0) {
+                        <div class="countdown-badge today">
+                          <mat-icon>today</mat-icon>
+                          <span>Today!</span>
+                        </div>
+                      } @else if (getDaysUntil(appointment.scheduledAt) === 1) {
+                        <div class="countdown-badge tomorrow">
+                          <mat-icon>event_note</mat-icon>
+                          <span>Tomorrow</span>
+                        </div>
+                      } @else {
+                        <div class="countdown-badge upcoming">
+                          <mat-icon>calendar_today</mat-icon>
+                          <span>In {{ getDaysUntil(appointment.scheduledAt) }} days</span>
+                        </div>
+                      }
+                    </div>
                   </div>
 
-                  <div class="countdown-banner">
-                    @if (getDaysUntil(appointment.scheduledAt) === 0) {
-                      <mat-icon class="countdown-icon">today</mat-icon>
-                      <span class="countdown-text">Today!</span>
-                    } @else if (getDaysUntil(appointment.scheduledAt) === 1) {
-                      <mat-icon class="countdown-icon">event_note</mat-icon>
-                      <span class="countdown-text">Tomorrow</span>
-                    } @else {
-                      <mat-icon class="countdown-icon">calendar_today</mat-icon>
-                      <span class="countdown-text">In {{ getDaysUntil(appointment.scheduledAt) }} days</span>
-                    }
-                  </div>
+                  <mat-divider></mat-divider>
 
-                  <mat-card-actions class="card-actions">
+                  <div class="card-actions">
                     @if (canReschedule(appointment)) {
-                      <button
-                        mat-button
-                        color="primary"
-                        (click)="openRescheduleDialog(appointment)"
-                        matTooltip="Change appointment date/time">
+                      <button mat-stroked-button class="action-button reschedule-btn" (click)="openRescheduleDialog(appointment)">
                         <mat-icon>update</mat-icon>
-                        Reschedule
+                        <span>Reschedule</span>
                       </button>
                     }
+
                     @if (canCancel(appointment)) {
-                      <button
-                        mat-button
-                        color="warn"
-                        (click)="openCancelDialog(appointment)"
-                        matTooltip="Cancel this appointment">
+                      <button mat-stroked-button class="action-button cancel-btn" (click)="openCancelDialog(appointment)">
                         <mat-icon>cancel</mat-icon>
-                        Cancel
+                        <span>Cancel</span>
                       </button>
                     }
+
                     @if (appointment.serviceId) {
-                      <button
-                        mat-button
-                        (click)="viewServiceDetails(appointment.serviceId)"
-                        matTooltip="View service details">
-                        <mat-icon>info</mat-icon>
-                        Details
+                      <button mat-stroked-button class="action-button details-btn" (click)="viewServiceDetails(appointment.serviceId)">
+                        <mat-icon>info_outline</mat-icon>
+                        <span>Details</span>
                       </button>
                     }
-                  </mat-card-actions>
+                  </div>
                 </mat-card>
               }
             </div>
@@ -148,17 +159,21 @@
 
       <mat-tab>
         <ng-template mat-tab-label>
-          <mat-icon class="tab-icon">history</mat-icon>
-          Past
-          @if (pastAppointments().length > 0) {
-            <span class="badge">{{ pastAppointments().length }}</span>
-          }
+          <div class="tab-label">
+            <mat-icon class="tab-icon">history</mat-icon>
+            <span>Past</span>
+            @if (pastAppointments().length > 0) {
+              <span class="badge">{{ pastAppointments().length }}</span>
+            }
+          </div>
         </ng-template>
 
         <div class="tab-content">
           @if (pastAppointments().length === 0) {
             <div class="empty-state">
-              <mat-icon class="empty-icon">history</mat-icon>
+              <div class="empty-illustration">
+                <mat-icon class="empty-icon">history</mat-icon>
+              </div>
               <h3>No appointment history</h3>
               <p>Your completed appointments will appear here</p>
             </div>
@@ -166,57 +181,52 @@
             <div class="appointments-grid">
               @for (appointment of pastAppointments(); track appointment.appointmentId) {
                 <mat-card class="appointment-card past-card">
-                  <div class="card-header">
-                    <div class="service-info">
-                      <h3 class="service-name">{{ appointment.serviceName }}</h3>
-                      <div class="appointment-meta">
-                        <mat-icon class="meta-icon">event</mat-icon>
-                        <span>{{ formatDate(appointment.scheduledAt) }}</span>
-                      </div>
-                    </div>
-                    <mat-chip
-                      [color]="getStatusColor(appointment.status)"
-                      class="status-chip"
-                      selected>
+                  <div class="card-ribbon">
+                    <mat-chip class="status-chip" [attr.data-status]="appointment.status">
                       <mat-icon class="chip-icon">{{ getStatusIcon(appointment.status) }}</mat-icon>
                       {{ appointment.status }}
                     </mat-chip>
                   </div>
 
-                  <mat-divider></mat-divider>
-
-                  <div class="card-content">
-                    <div class="detail-row">
-                      <mat-icon class="detail-icon">location_on</mat-icon>
-                      <span>{{ appointment.location }}</span>
+                  <div class="card-header">
+                    <h3 class="service-name">{{ appointment.serviceName }}</h3>
+                    <div class="appointment-datetime past">
+                      <mat-icon>event</mat-icon>
+                      <span>{{ formatDate(appointment.scheduledAt) }}</span>
                     </div>
-                    @if (appointment.description) {
-                      <div class="detail-row">
-                        <mat-icon class="detail-icon">notes</mat-icon>
-                        <span>{{ appointment.description }}</span>
-                      </div>
-                    }
                   </div>
 
-                  <mat-card-actions class="card-actions">
-                    <button
-                      mat-button
-                      color="primary"
-                      (click)="bookNewAppointment()"
-                      matTooltip="Book this service again">
+                  <div class="card-body">
+                    <div class="info-grid compact">
+                      <div class="info-item">
+                        <mat-icon>location_on</mat-icon>
+                        <span class="info-value">{{ appointment.location }}</span>
+                      </div>
+
+                      @if (appointment.servicePrice) {
+                        <div class="info-item">
+                          <mat-icon>payments</mat-icon>
+                          <span class="info-value">${{ appointment.servicePrice }}</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <mat-divider></mat-divider>
+
+                  <div class="card-actions">
+                    <button mat-stroked-button class="action-button book-again-btn" (click)="bookNewAppointment()">
                       <mat-icon>refresh</mat-icon>
-                      Book Again
+                      <span>Book Again</span>
                     </button>
+
                     @if (appointment.serviceId) {
-                      <button
-                        mat-button
-                        (click)="viewServiceDetails(appointment.serviceId)"
-                        matTooltip="View service details">
-                        <mat-icon>info</mat-icon>
-                        Details
+                      <button mat-stroked-button class="action-button details-btn" (click)="viewServiceDetails(appointment.serviceId)">
+                        <mat-icon>info_outline</mat-icon>
+                        <span>View Details</span>
                       </button>
                     }
-                  </mat-card-actions>
+                  </div>
                 </mat-card>
               }
             </div>

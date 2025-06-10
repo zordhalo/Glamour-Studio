@@ -13,9 +13,10 @@ import { MatChipsModule } from '@angular/material/chips';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ApiService } from '../../../services/api.service';
 import { AvailabilitySlotResponseDto } from '../../../interfaces/availability.dto';
+import { AppointmentResponseDto } from '../../../interfaces/appointment.dto';
 
 interface DialogData {
-  appointment: any;
+  appointment: AppointmentResponseDto;
 }
 
 @Component({

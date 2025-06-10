@@ -3,9 +3,10 @@ import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { AppointmentResponseDto } from '../../../interfaces/appointment.dto';
 
 interface DialogData {
-  appointment: any;
+  appointment: AppointmentResponseDto;
 }
 
 @Component({
