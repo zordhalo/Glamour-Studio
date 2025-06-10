@@ -1,0 +1,407 @@
+// Dashboard Container
+.dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem 0;
+}
+
+// Dashboard Header
+.dashboard-header {
+  max-width: 1200px;
+  margin: 0 auto 3rem;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.header-content {
+  flex: 1;
+}
+
+.dashboard-title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+
+  .gradient-text {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.dashboard-subtitle {
+  font-size: 1.25rem;
+  color: #666;
+}
+
+.book-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  padding: 0.75rem 2rem !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+  transition: all 0.3s ease !important;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  mat-icon {
+    margin-right: 0.5rem;
+  }
+}
+
+// Loading State
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+
+  mat-spinner {
+    --mdc-circular-progress-active-indicator-color: #667eea;
+  }
+
+  p {
+    color: #666;
+    font-size: 1.1rem;
+  }
+}
+
+// Tabs
+.appointments-tabs {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+
+  ::ng-deep {
+    .mat-mdc-tab-list {
+      background: white;
+      border-radius: 20px 20px 0 0;
+      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .mat-mdc-tab {
+      min-width: 180px;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .mat-mdc-tab-label-content {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .mdc-tab--active {
+      .tab-icon {
+        color: #667eea;
+      }
+    }
+
+    .mat-mdc-tab-body-wrapper {
+      background: white;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+.tab-icon {
+  font-size: 1.25rem !important;
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+}
+
+.badge {
+  background: #667eea;
+  color: white;
+  border-radius: 12px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.tab-content {
+  padding: 2rem;
+  min-height: 400px;
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+
+  .empty-icon {
+    font-size: 5rem !important;
+    width: 5rem !important;
+    height: 5rem !important;
+    color: #ccc;
+    margin-bottom: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: #999;
+    margin-bottom: 2rem;
+  }
+}
+
+// Appointments Grid
+.appointments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 2rem;
+}
+
+// Appointment Card
+.appointment-card {
+  border-radius: 20px !important;
+  overflow: hidden;
+  transition: all 0.3s ease !important;
+  border: none !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  &.upcoming-card {
+    border-top: 4px solid #667eea;
+  }
+
+  &.past-card {
+    border-top: 4px solid #ccc;
+    opacity: 0.9;
+  }
+}
+
+.card-header {
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.service-info {
+  flex: 1;
+}
+
+.service-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.75rem;
+}
+
+.appointment-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+
+  .meta-icon {
+    font-size: 1.125rem !important;
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+    color: #999;
+  }
+}
+
+.status-chip {
+  ::ng-deep .mat-mdc-chip {
+    height: 32px !important;
+    font-weight: 600;
+  }
+
+  .chip-icon {
+    font-size: 1rem !important;
+    width: 1rem !important;
+    height: 1rem !important;
+    margin-right: 0.25rem !important;
+  }
+}
+
+.card-content {
+  padding: 0 1.5rem 1.5rem;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  color: #666;
+
+  .detail-icon {
+    font-size: 1.125rem !important;
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+    color: #999;
+  }
+}
+
+.service-description {
+  background: #f5f7fa;
+  padding: 1rem;
+  border-radius: 10px;
+  margin: 1rem 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.countdown-banner {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+
+  .countdown-icon {
+    font-size: 1.25rem !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+
+  .countdown-text {
+    font-size: 1.1rem;
+  }
+}
+
+.card-actions {
+  padding: 1rem 0.5rem !important;
+  background: #f9f9f9;
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  button {
+    flex: 1;
+    min-width: 120px;
+    font-weight: 500;
+
+    mat-icon {
+      margin-right: 0.25rem;
+      font-size: 1.125rem !important;
+      width: 1.125rem !important;
+      height: 1.125rem !important;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .dashboard-title {
+    font-size: 2.5rem;
+  }
+
+  .book-button {
+    width: 100%;
+  }
+
+  .appointments-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .appointments-tabs ::ng-deep {
+    .mat-mdc-tab {
+      min-width: 120px;
+      font-size: 1rem;
+    }
+  }
+
+  .tab-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 1rem 0;
+  }
+
+  .dashboard-header {
+    padding: 0 1rem;
+  }
+
+  .dashboard-title {
+    font-size: 2rem;
+  }
+
+  .dashboard-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .appointments-tabs {
+    padding: 0 1rem;
+  }
+
+  .service-name {
+    font-size: 1.25rem;
+  }
+
+  .card-actions {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// Material theme overrides
+::ng-deep {
+  .mat-mdc-chip.mat-mdc-chip-selected.mat-primary {
+    --mdc-chip-elevated-container-color: #667eea;
+    --mdc-chip-label-text-color: white;
+  }
+
+  .mat-mdc-chip.mat-mdc-chip-selected.mat-accent {
+    --mdc-chip-elevated-container-color: #4caf50;
+    --mdc-chip-label-text-color: white;
+  }
+
+  .mat-mdc-chip.mat-mdc-chip-selected.mat-warn {
+    --mdc-chip-elevated-container-color: #ff9800;
+    --mdc-chip-label-text-color: white;
+  }
+
+  .mat-mdc-chip.mat-mdc-chip-selected.mat-error {
+    --mdc-chip-elevated-container-color: #f44336;
+    --mdc-chip-label-text-color: white;
+  }
+
+  .mat-mdc-chip.mat-mdc-chip-selected.mat-success {
+    --mdc-chip-elevated-container-color: #4caf50;
+    --mdc-chip-label-text-color: white;
+  }
+}

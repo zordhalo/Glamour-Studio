@@ -1,0 +1,222 @@
+.dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  padding: 1.5rem 1.5rem 0;
+
+  .title-icon {
+    color: #667eea;
+    font-size: 1.75rem !important;
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+}
+
+.dialog-content {
+  padding: 1.5rem !important;
+  min-width: 500px;
+
+  @media (max-width: 600px) {
+    min-width: 280px;
+  }
+}
+
+.appointment-info {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e3e7f0 100%);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 1rem;
+  }
+
+  .info-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    mat-icon {
+      font-size: 1.125rem !important;
+      width: 1.125rem !important;
+      height: 1.125rem !important;
+      color: #999;
+    }
+  }
+}
+
+.reschedule-form {
+  .date-field {
+    width: 100%;
+    margin-bottom: 2rem;
+
+    ::ng-deep {
+      .mat-mdc-text-field-wrapper {
+        background: white;
+        border-radius: 10px;
+      }
+
+      .mat-mdc-form-field-focus-overlay {
+        background: transparent;
+      }
+
+      .mdc-text-field--filled:not(.mdc-text-field--disabled) {
+        background-color: white;
+      }
+
+      .mat-mdc-form-field-subscript-wrapper {
+        margin-top: 0.5rem;
+      }
+    }
+  }
+}
+
+.slots-section {
+  h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #666;
+    margin: 0 0 1rem;
+  }
+}
+
+.no-slots {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+
+  mat-icon {
+    font-size: 3rem !important;
+    width: 3rem !important;
+    height: 3rem !important;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.time-slot {
+  ::ng-deep .mat-mdc-chip {
+    background: white !important;
+    border: 2px solid #e0e0e0 !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    height: auto !important;
+    min-height: 48px;
+
+    &:hover {
+      border-color: #667eea !important;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .mdc-evolution-chip__text-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+      color: #666;
+    }
+  }
+
+  &.mat-mdc-chip-selected ::ng-deep .mat-mdc-chip {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: transparent !important;
+
+    .mdc-evolution-chip__text-label {
+      color: white;
+    }
+
+    .slot-icon {
+      color: white;
+    }
+  }
+
+  .slot-icon {
+    font-size: 1.125rem !important;
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+    color: #999;
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  gap: 1rem;
+
+  mat-spinner {
+    --mdc-circular-progress-active-indicator-color: #667eea;
+  }
+
+  p {
+    color: #666;
+    margin: 0;
+  }
+}
+
+.dialog-actions {
+  padding: 1rem 1.5rem 1.5rem !important;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+
+  button {
+    min-width: 120px;
+    font-weight: 500;
+
+    &[color="primary"] {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      color: white !important;
+
+      mat-spinner {
+        --mdc-circular-progress-active-indicator-color: white;
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 600px) {
+  .slots-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dialog-actions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// Helper function styles
+.formatDate {
+  display: inline-block;
+}

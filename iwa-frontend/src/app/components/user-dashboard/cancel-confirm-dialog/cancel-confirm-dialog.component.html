@@ -1,0 +1,47 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon class="warning-icon">warning</mat-icon>
+  Cancel Appointment
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  <p class="warning-message">
+    Are you sure you want to cancel this appointment?
+  </p>
+
+  <div class="appointment-card">
+    <h3>{{ data.appointment.serviceName }}</h3>
+    <div class="appointment-details">
+      <div class="detail-row">
+        <mat-icon>event</mat-icon>
+        <span>{{ formatDate(data.appointment.scheduledAt) }}</span>
+      </div>
+      <div class="detail-row">
+        <mat-icon>access_time</mat-icon>
+        <span>{{ formatTime(data.appointment.scheduledAt) }}</span>
+      </div>
+      <div class="detail-row">
+        <mat-icon>location_on</mat-icon>
+        <span>{{ data.appointment.location }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cancellation-policy">
+    <mat-icon>info</mat-icon>
+    <p>
+      <strong>Cancellation Policy:</strong> 
+      Please note that cancellations made less than 24 hours before your appointment 
+      may be subject to a cancellation fee.
+    </p>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions class="dialog-actions">
+  <button mat-button (click)="onCancel()">
+    Keep Appointment
+  </button>
+  <button mat-raised-button color="warn" (click)="onConfirm()">
+    <mat-icon>cancel</mat-icon>
+    Yes, Cancel Appointment
+  </button>
+</mat-dialog-actions>

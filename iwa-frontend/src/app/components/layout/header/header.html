@@ -25,6 +25,10 @@
           Services
         </a>
         @if (isLoggedIn$ | async) {
+          <a mat-button routerLink="/dashboard" routerLinkActive="active">
+            <mat-icon>dashboard</mat-icon>
+            Dashboard
+          </a>
           <a mat-button routerLink="/my-appointments" routerLinkActive="active">
             <mat-icon>calendar_today</mat-icon>
             My Appointments

@@ -22,4 +22,12 @@ export class ApiService {
   postText(endpoint: string, data: any): Observable<string> {
     return this.http.post(`${this.baseUrl}/${endpoint}`, data, { responseType: 'text' });
   }
+
+  put<T>(endpoint: string, data: any): Observable<T> {
+    return this.http.put<T>(`${this.baseUrl}/${endpoint}`, data);
+  }
+
+  delete<T>(endpoint: string): Observable<T> {
+    return this.http.delete<T>(`${this.baseUrl}/${endpoint}`);
+  }
 }

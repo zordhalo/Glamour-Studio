@@ -1,10 +1,15 @@
 export interface AppointmentResponseDto {
   appointmentId: number;
+  userId?: number;
   userName: string;
+  serviceId?: number;
   serviceName: string;
+  serviceDescription?: string;
+  serviceDurationMin?: number;
+  servicePrice?: number;
   status: string;
   location: string;
-  scheduledAt: string; 
+  scheduledAt: string;
   description: string;
 }
 
@@ -13,4 +18,13 @@ export interface BookAppointmentDto {
   serviceId: number;
   location: string;
   description?: string;
+}
+
+export interface RescheduleAppointmentDto {
+  newSlotId: number;
+  serviceId: number;
+}
+
+export interface UpdateAppointmentStatusDto {
+  status: string;
 }

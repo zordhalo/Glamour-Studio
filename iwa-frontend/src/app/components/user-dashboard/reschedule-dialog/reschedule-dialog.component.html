@@ -1,0 +1,87 @@
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon class="title-icon">update</mat-icon>
+  Reschedule Appointment
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  <div class="appointment-info">
+    <h3>{{ data.appointment.serviceName }}</h3>
+    <div class="info-row">
+      <mat-icon>event</mat-icon>
+      <span>Current: {{ formatDate(data.appointment.scheduledAt) }}</span>
+    </div>
+    <div class="info-row">
+      <mat-icon>location_on</mat-icon>
+      <span>{{ data.appointment.location }}</span>
+    </div>
+  </div>
+
+  <form [formGroup]="rescheduleForm" class="reschedule-form">
+    <mat-form-field appearance="fill" class="date-field">
+      <mat-label>Select New Date</mat-label>
+      <input 
+        matInput 
+        [matDatepicker]="picker" 
+        formControlName="date"
+        [min]="minDate"
+        [max]="maxDate"
+        [matDatepickerFilter]="dateFilter"
+        (dateChange)="onDateChange($event.value)"
+        readonly>
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    @if (selectedDate() && !isLoading()) {
+      <div class="slots-section">
+        <h4>Available Time Slots</h4>
+        @if (availableSlots().length === 0) {
+          <div class="no-slots">
+            <mat-icon>event_busy</mat-icon>
+            <p>No available slots for this date</p>
+          </div>
+        } @else {
+          <div class="slots-grid">
+            @for (slot of availableSlots(); track slot.slotId) {
+              <mat-chip-option 
+                [value]="slot.slotId"
+                [selected]="rescheduleForm.get('slotId')?.value === slot.slotId"
+                (click)="rescheduleForm.patchValue({ slotId: slot.slotId })"
+                class="time-slot">
+                <mat-icon class="slot-icon">access_time</mat-icon>
+                {{ formatTime(slot) }}
+              </mat-chip-option>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (isLoading()) {
+      <div class="loading-container">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading available slots...</p>
+      </div>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions class="dialog-actions">
+  <button 
+    mat-button 
+    (click)="onCancel()"
+    [disabled]="isLoading()">
+    Cancel
+  </button>
+  <button 
+    mat-raised-button 
+    color="primary"
+    (click)="onSubmit()"
+    [disabled]="!rescheduleForm.valid || isLoading()">
+    @if (isLoading()) {
+      <mat-spinner diameter="20"></mat-spinner>
+    } @else {
+      Confirm Reschedule
+    }
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,139 @@
+.dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  padding: 1.5rem 1.5rem 0;
+
+  .warning-icon {
+    color: #ff9800;
+    font-size: 1.75rem !important;
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+}
+
+.dialog-content {
+  padding: 1.5rem !important;
+  min-width: 400px;
+
+  @media (max-width: 500px) {
+    min-width: 280px;
+  }
+}
+
+.warning-message {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.appointment-card {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);
+  border: 1px solid #ffcdd2;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 1rem;
+  }
+}
+
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #666;
+
+  mat-icon {
+    font-size: 1.125rem !important;
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+    color: #999;
+  }
+}
+
+.cancellation-policy {
+  display: flex;
+  gap: 0.75rem;
+  background: #fff3e0;
+  border: 1px solid #ffe0b2;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-top: 1rem;
+
+  mat-icon {
+    color: #ff9800;
+    font-size: 1.25rem !important;
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  p {
+    margin: 0;
+    color: #666;
+    line-height: 1.5;
+    flex: 1;
+
+    strong {
+      color: #333;
+    }
+  }
+}
+
+.dialog-actions {
+  padding: 1rem 1.5rem 1.5rem !important;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+
+  button {
+    min-width: 140px;
+    font-weight: 500;
+
+    &[color="warn"] {
+      mat-icon {
+        margin-right: 0.5rem;
+        font-size: 1.125rem !important;
+        width: 1.125rem !important;
+        height: 1.125rem !important;
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 500px) {
+  .dialog-actions {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .cancellation-policy {
+    flex-direction: column;
+    text-align: center;
+
+    mat-icon {
+      align-self: center;
+    }
+  }
+}
