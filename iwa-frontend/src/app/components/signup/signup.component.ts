@@ -156,18 +156,51 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
           name: signupData.name,
           givenName: signupData.name,
           familyName: signupData.surname,
+          phoneNum: signupData.phoneNum,
           id: ''
         };
 
         this.authService.signupWithGoogle(googleUser).subscribe({
           next: () => {
-            sessionStorage.removeItem('oauthToken');
-            this.handleSuccessfulSignup(signupData.email, true);
+            // After successful signup, authenticate immediately
+            this.authService.authenticateWithOAuth('google', oauthToken).subscribe({
+              next: (loginResponse) => {
+                this.isSubmitting = false;
+                sessionStorage.removeItem('oauthToken');
+                if (loginResponse.token) {
+                  this.snackBar.open('Account created successfully! You are now logged in.', 'Close', {
+                    duration: 5000,
+                    horizontalPosition: 'center',
+                    verticalPosition: 'top',
+                    panelClass: ['success-snackbar']
+                  });
+                  this.router.navigate(['/my-appointments']);
+                } else {
+                  this.showError('Account created but login failed. Please try logging in manually.');
+                  this.router.navigate(['/login']);
+                }
+              },
+              error: (loginErr) => {
+                this.isSubmitting = false;
+                sessionStorage.removeItem('oauthToken');
+                console.error('OAuth authentication error after signup:', loginErr);
+                this.showError('Account created but login failed. Please try logging in manually.');
+                this.router.navigate(['/login']);
+              }
+            });
           },
           error: (err) => {
             this.isSubmitting = false;
-            this.errorMessage = 'OAuth signup failed. Please try again.';
-            console.error(err);
+            console.error('Google signup error:', err);
+            if (err.status === 409 || err.error?.message?.includes('already registered')) {
+              this.errorMessage = 'An account with this email already exists. Please login instead.';
+              setTimeout(() => {
+                this.router.navigate(['/login']);
+              }, 3000);
+            } else {
+              this.errorMessage = err.error?.message || 'OAuth signup failed. Please try again.';
+            }
+            this.showError(this.errorMessage ?? 'An unknown error occurred.');
           }
         });
       } else {
@@ -259,31 +292,18 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
     return '';
   }
 
-  private handleSuccessfulSignup(email: string, isGoogle: boolean = false): void {
-    if (isGoogle) {
-      // This case is for when the user was redirected from login to complete their profile
-      const token = sessionStorage.getItem('oauthToken');
-      if (token) {
-        this.authService.authenticateWithOAuth('google', token).subscribe({
-          next: () => {
-            this.snackBar.open('Profile completed! You are now logged in.', 'Close', { duration: 5000 });
-            this.router.navigate(['/my-appointments']);
-          },
-          error: () => this.router.navigate(['/login'])
-        });
-      }
-    } else {
-      localStorage.setItem('pendingVerificationEmail', email);
-      this.snackBar.open('Signup successful! Please check your email for the verification code.', 'Close', {
-        duration: 5000,
-        horizontalPosition: 'center',
-        verticalPosition: 'top',
-        panelClass: ['success-snackbar']
-      });
-      this.router.navigate(['/verify-email'], {
-        state: { email: email }
-      });
-    }
+  private handleSuccessfulSignup(email: string): void {
+    this.isSubmitting = false;
+    localStorage.setItem('pendingVerificationEmail', email);
+    this.snackBar.open('Signup successful! Please check your email for the verification code.', 'Close', {
+      duration: 5000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
+      panelClass: ['success-snackbar']
+    });
+    this.router.navigate(['/verify-email'], {
+      state: { email: email }
+    });
   }
 
   private handleGoogleSignup(response: any): void {

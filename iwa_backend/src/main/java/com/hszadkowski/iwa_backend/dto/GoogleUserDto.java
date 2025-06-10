@@ -14,4 +14,5 @@ public class GoogleUserDto {
     private String givenName;
     private String familyName;
     private String accessToken;
+    private String phoneNum;
 }

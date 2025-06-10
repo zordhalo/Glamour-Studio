@@ -100,7 +100,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .name(googleUser.getGivenName() != null ? googleUser.getGivenName() : googleUser.getName())
                 .surname(googleUser.getFamilyName() != null ? googleUser.getFamilyName() : "")
                 .email(googleUser.getEmail())
-                .phoneNum("") // Google does not provide phone number
+                .phoneNum(googleUser.getPhoneNum() != null ? googleUser.getPhoneNum() : "") // Use provided phone number or empty string
                 .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString())) // Assign a random, unusable password
                 .role("ROLE_USER")
                 .build();
