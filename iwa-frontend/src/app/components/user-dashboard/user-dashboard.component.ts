@@ -62,6 +62,70 @@ export class UserDashboardComponent implements OnInit {
     this.loadAppointments();
   }
 
+  loadUserProfile(): void {
+    this.apiService.get<UserProfileDto>('users/profile').subscribe({
+      next: (data) => {
+        this.userProfile.set(data);
+        this.profileForm.patchValue({
+          name: data.name || '',
+          surname: data.surname || '',
+          email: data.email || '',
+          phoneNum: data.phoneNum || ''
+        });
+      },
+      error: (err) => {
+        console.error('Failed to fetch user profile', err);
+      }
+    });
+  }
+
+  updateProfile(): void {
+    if (this.profileForm.valid && this.profileForm.dirty) {
+      this.isUpdatingProfile.set(true);
+      const updateData: UserProfileUpdateDto = {
+        name: this.profileForm.get('name')?.value,
+        surname: this.profileForm.get('surname')?.value,
+        phoneNum: this.profileForm.get('phoneNum')?.value
+      };
+
+      this.apiService.put<UserProfileDto>('users/profile', updateData).subscribe({
+        next: (data) => {
+          this.userProfile.set(data);
+          this.snackBar.open('Profile updated successfully!', 'Close', {
+            duration: 3000,
+            horizontalPosition: 'end',
+            verticalPosition: 'top',
+            panelClass: ['success-snackbar']
+          });
+          this.profileForm.markAsPristine();
+          this.isUpdatingProfile.set(false);
+        },
+        error: (err) => {
+          this.snackBar.open('Failed to update profile. Please try again.', 'Close', {
+            duration: 3000,
+            horizontalPosition: 'end',
+            verticalPosition: 'top',
+            panelClass: ['error-snackbar']
+          });
+          this.isUpdatingProfile.set(false);
+        }
+      });
+    }
+  }
+
+  resetForm(): void {
+    const profile = this.userProfile();
+    if (profile) {
+      this.profileForm.patchValue({
+        name: profile.name || '',
+        surname: profile.surname || '',
+        email: profile.email || '',
+        phoneNum: profile.phoneNum || ''
+      });
+      this.profileForm.markAsPristine();
+    }
+  }
+
   loadAppointments(): void {
     this.isLoading.set(true);
     this.apiService.get<AppointmentResponseDto[]>('appointments/my').subscribe({
