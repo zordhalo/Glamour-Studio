@@ -64,15 +64,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow all OPTIONS requests for CORS preflight
-                        .requestMatchers("/h2-console/**", "/register", "/register/facebook", "/api/auth/facebook",
-                                "/auth/signup/google", "/auth/login/google", "/auth/oauth/authenticate",
-                                "/user-already-exist", "/invalidSession", "/auth/**")
+                        .requestMatchers("/h2-console/**", "/register", "/register/facebook", 
+                                "/api/auth/**",
+                                "/user-already-exist", "/invalidSession")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/services", "/services/**")
+                        .requestMatchers(HttpMethod.GET, "/api/services", "/api/services/**")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/appointments").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/appointments/*/status").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/availability", "/availability/service/**", "/availability/*/check").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/appointments").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/appointments/*/status").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/availability", "/api/availability/service/**", "/api/availability/*/check", "/api/availability/*/can-book").permitAll()
                         .anyRequest().authenticated())
                 .headers(headers -> headers
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))

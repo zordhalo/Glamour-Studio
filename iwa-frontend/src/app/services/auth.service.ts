@@ -96,8 +96,15 @@ export class AuthService {
     try {
       const decoded: { exp: number } = jwtDecode(token);
       const isExpired = Date.now() >= decoded.exp * 1000;
-      return !isExpired;
+      if (isExpired) {
+        // Clear expired token
+        localStorage.removeItem('jwt_token');
+        return false;
+      }
+      return true;
     } catch (error) {
+      // Clear invalid token
+      localStorage.removeItem('jwt_token');
       return false;
     }
   }

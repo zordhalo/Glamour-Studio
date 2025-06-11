@@ -7,6 +7,7 @@ import com.hszadkowski.iwa_backend.models.AppUser;
 import com.hszadkowski.iwa_backend.services.interfaces.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,18 +39,35 @@ public class UserController {
     
     @GetMapping("/users/profile")
     public ResponseEntity<UserProfileDto> getUserProfile() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
-        
-        AppUser user = userService.findByEmail(userEmail);
-        UserProfileDto profile = UserProfileDto.builder()
-                .name(user.getName())
-                .surname(user.getSurname())
-                .email(user.getEmail())
-                .phoneNum(user.getPhoneNum())
-                .build();
-                
-        return ResponseEntity.ok(profile);
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || authentication.getName() == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
+            String userEmail = authentication.getName();
+            System.out.println("Getting profile for user: " + userEmail);
+            
+            AppUser user = userService.findByEmail(userEmail);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            
+            UserProfileDto profile = UserProfileDto.builder()
+                    .name(user.getName())
+                    .surname(user.getSurname())
+                    .email(user.getEmail())
+                    .phoneNum(user.getPhoneNum())
+                    .build();
+                    
+            System.out.println("Profile data: " + profile);
+            
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            System.err.println("Error getting user profile: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
     
     @PutMapping("/users/profile")

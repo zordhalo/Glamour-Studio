@@ -7,6 +7,7 @@ import { LandingComponent } from './components/landing/landing.component';
 import { authGuard } from './guards/auth-guard';
 import { ServiceDetailComponent } from './components/service-detail/service-detail.component';
 import { UserDashboardComponent } from './components/user-dashboard/user-dashboard.component';
+import { UserSettingsComponent } from './components/user-settings/user-settings.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -18,6 +19,11 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: UserDashboardComponent,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'settings',
+    component: UserSettingsComponent,
     canActivate: [authGuard],
   },
 ];
