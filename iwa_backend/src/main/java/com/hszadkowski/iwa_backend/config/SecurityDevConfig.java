@@ -24,13 +24,13 @@ public class SecurityDevConfig {
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/h2-console/**", "/register", "/register/facebook",
-                                                                "/api/auth/facebook", "/user-already-exist",
+                                                                "/api/auth/**", "/user-already-exist",
                                                                 "/invalidSession")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .csrf(csrf -> csrf
                                                 .ignoringRequestMatchers("/h2-console/**", "/register",
-                                                                "/register/facebook", "/api/auth/facebook",
+                                                                "/register/facebook", "/api/auth/**",
                                                                 "/user-already-exist", "/invalidSession"))
                                 .headers(headers -> headers
                                                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))

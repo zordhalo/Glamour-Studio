@@ -1,5 +1,9 @@
 package com.hszadkowski.iwa_backend.services.interfaces;
 
+import com.hszadkowski.iwa_backend.dto.UserProfileUpdateDto;
+import com.hszadkowski.iwa_backend.models.AppUser;
+
 public interface UserService {
-    // Methods will be added as needed
+    AppUser findByEmail(String email);
+    AppUser updateUserProfile(String email, UserProfileUpdateDto updateDto);
 }

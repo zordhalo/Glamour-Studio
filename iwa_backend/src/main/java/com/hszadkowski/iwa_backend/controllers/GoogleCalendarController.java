@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/calendar")
+@RequestMapping("/api/calendar")
 @RequiredArgsConstructor
 @Slf4j
 public class GoogleCalendarController {

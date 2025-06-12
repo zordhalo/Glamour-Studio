@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../../services/auth.service';
@@ -15,6 +16,7 @@ import { AuthService } from '../../../services/auth.service';
     MatToolbarModule,
     MatButtonModule,
     MatIconModule,
+    MatTooltipModule,
     RouterModule,
   ],
   templateUrl: './header.html',
