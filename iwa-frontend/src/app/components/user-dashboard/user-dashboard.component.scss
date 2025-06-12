@@ -273,6 +273,8 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   padding: 0 !important;
   border: none !important;
   box-shadow: none !important;
+  pointer-events: none !important;
+  cursor: default !important;
 
   ::ng-deep {
     .mat-mdc-chip {
@@ -282,21 +284,39 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
       box-shadow: none !important;
       padding: 0 !important;
       min-height: auto !important;
+      pointer-events: none !important;
+      cursor: default !important;
     }
 
     .mdc-evolution-chip {
       border: none !important;
       outline: none !important;
       box-shadow: none !important;
+      cursor: default !important;
     }
 
     .mdc-evolution-chip__cell {
       border: none !important;
+      cursor: default !important;
     }
 
     .mdc-evolution-chip__action {
       border: none !important;
       outline: none !important;
+      cursor: default !important;
+      pointer-events: none !important;
+    }
+
+    .mdc-evolution-chip--selectable:hover {
+      background: transparent !important;
+    }
+
+    .mat-mdc-chip-focus-overlay {
+      display: none !important;
+    }
+
+    .mat-mdc-chip-ripple {
+      display: none !important;
     }
   }
 

@@ -49,7 +49,7 @@
               @for (appointment of upcomingAppointments(); track appointment.appointmentId) {
                 <mat-card class="appointment-card upcoming-card">
                   <div class="card-ribbon">
-                    <mat-chip class="status-chip" [attr.data-status]="appointment.status">
+                    <mat-chip class="status-chip" [attr.data-status]="appointment.status" [disabled]="true">
                       <mat-icon class="chip-icon">{{ getStatusIcon(appointment.status) }}</mat-icon>
                       {{ appointment.status }}
                     </mat-chip>
@@ -182,7 +182,7 @@
               @for (appointment of pastAppointments(); track appointment.appointmentId) {
                 <mat-card class="appointment-card past-card">
                   <div class="card-ribbon">
-                    <mat-chip class="status-chip" [attr.data-status]="appointment.status">
+                    <mat-chip class="status-chip" [attr.data-status]="appointment.status" [disabled]="true">
                       <mat-icon class="chip-icon">{{ getStatusIcon(appointment.status) }}</mat-icon>
                       {{ appointment.status }}
                     </mat-chip>
