@@ -30,6 +30,13 @@
             Dashboard
           </a>
 
+          @if (isAdmin) {
+            <a mat-button routerLink="/admin" routerLinkActive="active">
+              <mat-icon>admin_panel_settings</mat-icon>
+              Admin
+            </a>
+          }
+
           <a mat-icon-button routerLink="/settings" routerLinkActive="active" matTooltip="Settings">
             <mat-icon>settings</mat-icon>
           </a>

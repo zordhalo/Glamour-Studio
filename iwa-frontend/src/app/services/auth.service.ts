@@ -5,6 +5,13 @@ import { jwtDecode } from 'jwt-decode';
 import { ApiService } from './api.service';
 import { LoginResponseDto } from '../interfaces/auth.dto';
 
+interface JwtPayload {
+  sub: string;
+  iat: number;
+  exp: number;
+  authorities?: Array<{ authority: string }>;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -20,6 +27,18 @@ export class AuthService {
 
   getToken(): string | null {
     return localStorage.getItem('jwt_token');
+  }
+
+  isAdmin(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+
+    try {
+      const decoded = jwtDecode<JwtPayload>(token);
+      return decoded.authorities?.some(auth => auth.authority === 'ROLE_ADMIN') || false;
+    } catch (error) {
+      return false;
+    }
   }
 
   login(credentials: any): Observable<LoginResponseDto> {

@@ -30,6 +30,22 @@ VALUES
         TRUE
     );
 
+INSERT INTO app_users
+(name, surname, email, phone_num, password_hash, role,
+ verification_code, verification_code_expires_at, enabled)
+VALUES
+    (
+     'Hubert',
+     'Admin',
+     'hubert.szadkowski05@gmail.com',
+     '123456789',
+     '{bcrypt}$2a$12$CujBhdicFbBBOLbJr7yPSeqw76PGW6AI2.ohWqdT0VE4Olcbutd5K', -- BCrypt hash of "admin123"
+        'ROLE_ADMIN',
+     NULL,
+     NULL,
+     TRUE
+    );
+
 -- Add appointment statuses
 INSERT INTO appointment_statuses (name) VALUES 
 ('PENDING'),
