@@ -5,8 +5,12 @@ import com.hszadkowski.iwa_backend.dto.CreateAvailabilitySlotDto;
 import com.hszadkowski.iwa_backend.dto.GetAvailableSlotsDto;
 import com.hszadkowski.iwa_backend.exceptions.ServiceDoesNotExistException;
 import com.hszadkowski.iwa_backend.models.AppUser;
+import com.hszadkowski.iwa_backend.models.Appointment;
+import com.hszadkowski.iwa_backend.models.AppointmentStatus;
 import com.hszadkowski.iwa_backend.models.AvailabilitySlot;
 import com.hszadkowski.iwa_backend.models.Service;
+import com.hszadkowski.iwa_backend.repos.AppointmentRepository;
+import com.hszadkowski.iwa_backend.repos.AppointmentStatusRepository;
 import com.hszadkowski.iwa_backend.repos.AvailabilitySlotRepository;
 import com.hszadkowski.iwa_backend.repos.ServiceRepository;
 import com.hszadkowski.iwa_backend.repos.UserRepository;
@@ -15,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
@@ -26,6 +32,8 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     private final AvailabilitySlotRepository availabilitySlotRepository;
     private final ServiceRepository serviceRepository;
     private final UserRepository userRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final AppointmentStatusRepository appointmentStatusRepository;
 
     @Override
     public AvailabilitySlotResponseDto createAvailabilitySlot(CreateAvailabilitySlotDto dto, String adminEmail) {
@@ -137,6 +145,19 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         AvailabilitySlot slot = availabilitySlotRepository.findById(slotId)
                 .orElseThrow(() -> new RuntimeException("Slot not found"));
 
+        // Check if there's an active appointment for this slot
+        Optional<Appointment> activeAppointment = appointmentRepository.findBySlotAndStatusNameNotIn(
+                slot, Arrays.asList("CANCELLED", "COMPLETED"));
+        
+        if (activeAppointment.isPresent()) {
+            // Cancel the appointment if it exists
+            Appointment appointment = activeAppointment.get();
+            AppointmentStatus cancelledStatus = appointmentStatusRepository.findByName("CANCELLED")
+                    .orElseThrow(() -> new RuntimeException("Cancelled status not found"));
+            appointment.setStatus(cancelledStatus);
+            appointmentRepository.save(appointment);
+        }
+
         slot.setIsBooked(false);
         availabilitySlotRepository.save(slot);
     }
@@ -199,7 +220,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     }
 
     private AvailabilitySlotResponseDto mapToResponseDto(AvailabilitySlot slot) {
-        return new AvailabilitySlotResponseDto(
+        AvailabilitySlotResponseDto dto = new AvailabilitySlotResponseDto(
                 slot.getSlotId(),
                 slot.getService().getServiceId(),
                 slot.getService().getName(),
@@ -207,5 +228,6 @@ public class AvailabilityServiceImpl implements AvailabilityService {
                 slot.getEndTime(),
                 slot.getIsBooked()
         );
+        return dto;
     }
 }

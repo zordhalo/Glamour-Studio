@@ -17,6 +17,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { ConfirmDialogComponent } from '../dialogs/confirm-dialog/confirm-dialog.component';
+import { AvailabilitySlotResponseDto } from '../../interfaces/availability.dto';
 
 interface Appointment {
   appointmentId: number;
@@ -31,15 +32,6 @@ interface Appointment {
   location: string;
   scheduledAt: string;
   description: string;
-}
-
-interface AvailabilitySlot {
-  slotId: number;
-  serviceId: number;
-  serviceName: string;
-  startTime: string;
-  endTime: string;
-  isBooked: boolean;
 }
 
 interface Service {
@@ -77,7 +69,7 @@ interface Service {
 })
 export class AdminDashboardComponent implements OnInit {
   appointments: Appointment[] = [];
-  availabilitySlots: AvailabilitySlot[] = [];
+  availabilitySlots: AvailabilitySlotResponseDto[] = [];
   services: Service[] = [];
 
   appointmentDisplayedColumns: string[] = [
@@ -137,14 +129,37 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadAvailabilitySlots(): void {
-    this.apiService.get<AvailabilitySlot[]>('availability/all').subscribe({
+    this.apiService.get<AvailabilitySlotResponseDto[]>('availability/all').subscribe({
       next: (slots) => {
+        console.log('Raw slots response:', JSON.stringify(slots));
+
+        // Sort slots: non-expired first (by date), then expired (by date)
         this.availabilitySlots = slots.sort((a, b) => {
+          const aExpired = this.isSlotExpired(a);
+          const bExpired = this.isSlotExpired(b);
+
+          // If one is expired and the other isn't, non-expired comes first
+          if (aExpired && !bExpired) return 1;
+          if (!aExpired && bExpired) return -1;
+
+          // Otherwise sort by date (newest first for non-expired, oldest first for expired)
           const dateA = new Date(a.startTime);
           const dateB = new Date(b.startTime);
-          return dateB.getTime() - dateA.getTime();
+
+          if (!aExpired && !bExpired) {
+            // For non-expired: newest first
+            return dateB.getTime() - dateA.getTime();
+          } else {
+            // For expired: oldest first (so recently expired are at top of expired section)
+            return dateA.getTime() - dateB.getTime();
+          }
         });
+
         console.log('Loaded availability slots:', slots);
+        // Let's log the isBooked values to debug
+        slots.forEach(slot => {
+          console.log(`Slot ${slot.slotId}: isBooked = ${slot.isBooked}, type = ${typeof slot.isBooked}`);
+        });
       },
       error: (error) => {
         console.error('Error loading availability slots:', error);
@@ -237,7 +252,7 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  deleteAvailabilitySlot(slot: AvailabilitySlot): void {
+  deleteAvailabilitySlot(slot: AvailabilitySlotResponseDto): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
@@ -262,22 +277,43 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  toggleSlotAvailability(slot: AvailabilitySlot): void {
-    const endpoint = slot.isBooked ?
-      `availability/${slot.slotId}/release` :
-      `availability/${slot.slotId}/book`;
+  toggleSlotAvailability(slot: AvailabilitySlotResponseDto): void {
+    if (this.isSlotExpired(slot)) {
+      this.snackBar.open('Cannot modify expired slots', 'Close', { duration: 3000 });
+      return;
+    }
 
-    this.apiService.put(endpoint, {}).subscribe({
-      next: () => {
-        const message = slot.isBooked ?
-          'Slot marked as available' :
-          'Slot marked as booked';
-        this.snackBar.open(message, 'Close', { duration: 3000 });
-        this.loadAvailabilitySlots();
-      },
-      error: (error) => {
-        console.error('Error updating slot availability:', error);
-        this.snackBar.open('Failed to update slot availability', 'Close', { duration: 3000 });
+    const action = slot.isBooked ? 'release' : 'book';
+    const confirmMessage = slot.isBooked ?
+      'Are you sure you want to release this booked slot? This will make it available for booking again.' :
+      'Are you sure you want to manually mark this slot as booked?';
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: slot.isBooked ? 'Release Booking' : 'Mark as Booked',
+        message: confirmMessage
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const endpoint = `availability/${slot.slotId}/${action}`;
+
+        this.apiService.put(endpoint, {}).subscribe({
+          next: () => {
+            const message = slot.isBooked ?
+              'Booking released successfully - slot is now available' :
+              'Slot marked as booked';
+            this.snackBar.open(message, 'Close', { duration: 3000 });
+            this.loadAvailabilitySlots();
+            this.loadAppointments(); // Reload appointments in case this affects them
+          },
+          error: (error) => {
+            console.error('Error updating slot availability:', error);
+            this.snackBar.open('Failed to update slot availability', 'Close', { duration: 3000 });
+          }
+        });
       }
     });
   }
@@ -312,9 +348,36 @@ export class AdminDashboardComponent implements OnInit {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  getTimeRangeFromSlot(slot: AvailabilitySlot): string {
+  getTimeRangeFromSlot(slot: AvailabilitySlotResponseDto): string {
     const startTime = this.getTimeFromDateTime(slot.startTime);
     const endTime = this.getTimeFromDateTime(slot.endTime);
     return `${startTime} - ${endTime}`;
+  }
+
+  // Check if a slot is expired (past the current date/time)
+  isSlotExpired(slot: AvailabilitySlotResponseDto): boolean {
+    if (!slot || !slot.endTime) return false;
+    return new Date(slot.endTime) < new Date();
+  }
+
+  // Get slot status display
+  getSlotStatus(slot: AvailabilitySlotResponseDto): string {
+    if (this.isSlotExpired(slot)) {
+      return 'Expired';
+    }
+    return slot.isBooked ? 'Booked' : 'Available';
+  }
+
+  // Get CSS class for slot status
+  getSlotStatusClass(slot: AvailabilitySlotResponseDto): string {
+    if (this.isSlotExpired(slot)) {
+      return 'expired';
+    }
+    return slot.isBooked ? 'booked' : 'available';
+  }
+
+  // Check if slot actions should be disabled
+  shouldDisableSlotActions(slot: AvailabilitySlotResponseDto): boolean {
+    return this.isSlotExpired(slot);
   }
 }

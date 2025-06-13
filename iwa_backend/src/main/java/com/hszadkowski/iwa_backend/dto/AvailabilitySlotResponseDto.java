@@ -1,5 +1,6 @@
 package com.hszadkowski.iwa_backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,7 @@ public class AvailabilitySlotResponseDto {
     private String serviceName;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    
+    @JsonProperty("isBooked")
     private boolean isBooked;
 }

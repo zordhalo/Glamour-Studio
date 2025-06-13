@@ -117,6 +117,12 @@
         background-color: #f8d7da;
         color: #721c24;
       }
+
+      &.expired {
+        background-color: #e2e3e5;
+        color: #383d41;
+        font-style: italic;
+      }
     }
   }
 
@@ -140,6 +146,11 @@
 
     .mat-mdc-row:hover {
       background-color: #f9f9f9;
+    }
+
+    .mat-mdc-row.expired-row {
+      opacity: 0.6;
+      background-color: #f8f8f8;
     }
 
     .mat-mdc-tab-labels {

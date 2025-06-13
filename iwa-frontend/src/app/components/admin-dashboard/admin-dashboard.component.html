@@ -174,8 +174,11 @@
               <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef>Status</th>
                 <td mat-cell *matCellDef="let slot">
-                  <span class="availability-badge" [class.available]="!slot.isBooked" [class.booked]="slot.isBooked">
-                    {{ slot.isBooked ? 'Booked' : 'Available' }}
+                  <span class="availability-badge"
+                        [class.available]="!slot.isBooked && !isSlotExpired(slot)"
+                        [class.booked]="slot.isBooked && !isSlotExpired(slot)"
+                        [class.expired]="isSlotExpired(slot)">
+                    {{ getSlotStatus(slot) }}
                   </span>
                 </td>
               </ng-container>
@@ -183,19 +186,28 @@
               <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef>Actions</th>
                 <td mat-cell *matCellDef="let slot">
-                  <button mat-icon-button (click)="toggleSlotAvailability(slot)"
-                          [matTooltip]="slot.isBooked ? 'Mark as Available' : 'Mark as Booked'">
-                    <mat-icon>{{ slot.isBooked ? 'check_circle' : 'block' }}</mat-icon>
+                  <button mat-icon-button
+                          (click)="toggleSlotAvailability(slot)"
+                          [disabled]="shouldDisableSlotActions(slot)"
+                          [matTooltip]="slot.isBooked ? 'Release Booking' : 'Mark as Booked'"
+                          *ngIf="!isSlotExpired(slot)">
+                    <mat-icon [color]="slot.isBooked ? 'warn' : 'primary'">
+                      {{ slot.isBooked ? 'lock_open' : 'lock' }}
+                    </mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="deleteAvailabilitySlot(slot)"
-                          matTooltip="Delete Slot">
+                  <button mat-icon-button
+                          color="warn"
+                          (click)="deleteAvailabilitySlot(slot)"
+                          [disabled]="slot.isBooked"
+                          [matTooltip]="slot.isBooked ? 'Cannot delete booked slot' : 'Delete Slot'">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="slotDisplayedColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: slotDisplayedColumns;"></tr>
+              <tr mat-row *matRowDef="let row; columns: slotDisplayedColumns;"
+                  [class.expired-row]="isSlotExpired(row)"></tr>
             </table>
 
             <div class="no-data" *ngIf="availabilitySlots.length === 0">
