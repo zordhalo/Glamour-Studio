@@ -1,23 +1,25 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatCardModule } from '@angular/material/card';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ApiService } from '../../services/api.service';
-import { ConfirmDialogComponent } from '../dialogs/confirm-dialog/confirm-dialog.component';
-import { AvailabilitySlotResponseDto } from '../../interfaces/availability.dto';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MatTabsModule} from '@angular/material/tabs';
+import {MatCardModule} from '@angular/material/card';
+import {MatTableModule} from '@angular/material/table';
+import {MatButtonModule} from '@angular/material/button';
+import {MatIconModule} from '@angular/material/icon';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatSelectModule} from '@angular/material/select';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import {MatNativeDateModule} from '@angular/material/core';
+import {MatSnackBar, MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatDialogModule, MatDialog} from '@angular/material/dialog';
+import {MatMenuModule} from '@angular/material/menu';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {MatChipsModule} from '@angular/material/chips';
+import {MatExpansionModule} from '@angular/material/expansion';
+import {FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {ApiService} from '../../services/api.service';
+import {ConfirmDialogComponent} from '../dialogs/confirm-dialog/confirm-dialog.component';
+import {AvailabilitySlotResponseDto} from '../../interfaces/availability.dto';
 
 interface Appointment {
   appointmentId: number;
@@ -42,6 +44,28 @@ interface Service {
   price: number;
 }
 
+interface AppointmentFilters {
+  status: string;
+  dateFrom: Date | null;
+  dateTo: Date | null;
+  serviceId: number | null;
+  customerId: string;
+  appointmentId: string;
+  location: string;
+  priceMin: number | null;
+  priceMax: number | null;
+}
+
+interface SlotFilters {
+  status: string;
+  dateFrom: Date | null;
+  dateTo: Date | null;
+  serviceId: number | null;
+  slotId: string;
+  timeFrom: string;
+  timeTo: string;
+}
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -62,7 +86,9 @@ interface Service {
     MatSnackBarModule,
     MatDialogModule,
     MatMenuModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatChipsModule,
+    MatExpansionModule
   ],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']
@@ -93,7 +119,49 @@ export class AdminDashboardComponent implements OnInit {
 
   newSlotForm: FormGroup;
   selectedServiceId: number | null = null;
-  statusFilter: string = 'all';
+
+  // Enhanced filtering
+  appointmentFilters: AppointmentFilters = {
+    status: 'all',
+    dateFrom: null,
+    dateTo: null,
+    serviceId: null,
+    customerId: '',
+    appointmentId: '',
+    location: '',
+    priceMin: null,
+    priceMax: null
+  };
+
+  slotFilters: SlotFilters = {
+    status: 'all',
+    dateFrom: null,
+    dateTo: null,
+    serviceId: null,
+    slotId: '',
+    timeFrom: '',
+    timeTo: ''
+  };
+
+  // Filter panel states
+  appointmentFiltersExpanded = false;
+  slotFiltersExpanded = false;
+
+  // Status options
+  appointmentStatusOptions = [
+    {value: 'all', label: 'All'},
+    {value: 'PENDING', label: 'Pending'},
+    {value: 'CONFIRMED', label: 'Confirmed'},
+    {value: 'CANCELLED', label: 'Cancelled'},
+    {value: 'COMPLETED', label: 'Completed'}
+  ];
+
+  slotStatusOptions = [
+    {value: 'all', label: 'All'},
+    {value: 'available', label: 'Available'},
+    {value: 'booked', label: 'Booked'},
+    {value: 'expired', label: 'Expired'}
+  ];
 
   constructor(
     private apiService: ApiService,
@@ -123,7 +191,7 @@ export class AdminDashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading appointments:', error);
-        this.snackBar.open('Failed to load appointments', 'Close', { duration: 3000 });
+        this.snackBar.open('Failed to load appointments', 'Close', {duration: 3000});
       }
     });
   }
@@ -163,7 +231,7 @@ export class AdminDashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading availability slots:', error);
-        this.snackBar.open('Failed to load availability slots', 'Close', { duration: 3000 });
+        this.snackBar.open('Failed to load availability slots', 'Close', {duration: 3000});
       }
     });
   }
@@ -176,16 +244,202 @@ export class AdminDashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading services:', error);
-        this.snackBar.open('Failed to load services', 'Close', { duration: 3000 });
+        this.snackBar.open('Failed to load services', 'Close', {duration: 3000});
       }
     });
   }
 
   getFilteredAppointments(): Appointment[] {
-    if (this.statusFilter === 'all') {
-      return this.appointments;
+    let filtered = [...this.appointments];
+
+    // Status filter
+    if (this.appointmentFilters.status !== 'all') {
+      filtered = filtered.filter(app => app.status === this.appointmentFilters.status);
     }
-    return this.appointments.filter(app => app.status === this.statusFilter);
+
+    // Date range filter
+    if (this.appointmentFilters.dateFrom) {
+      const fromDate = new Date(this.appointmentFilters.dateFrom);
+      fromDate.setHours(0, 0, 0, 0);
+      filtered = filtered.filter(app => {
+        const appDate = new Date(app.scheduledAt);
+        return appDate >= fromDate;
+      });
+    }
+
+    if (this.appointmentFilters.dateTo) {
+      const toDate = new Date(this.appointmentFilters.dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(app => {
+        const appDate = new Date(app.scheduledAt);
+        return appDate <= toDate;
+      });
+    }
+
+    // Service filter
+    if (this.appointmentFilters.serviceId) {
+      filtered = filtered.filter(app => app.serviceId === this.appointmentFilters.serviceId);
+    }
+
+    // Customer ID/Name filter
+    if (this.appointmentFilters.customerId.trim()) {
+      const searchTerm = this.appointmentFilters.customerId.toLowerCase().trim();
+      filtered = filtered.filter(app =>
+        app.userName.toLowerCase().includes(searchTerm) ||
+        app.userId.toString().includes(searchTerm)
+      );
+    }
+
+    // Appointment ID filter
+    if (this.appointmentFilters.appointmentId.trim()) {
+      const searchId = this.appointmentFilters.appointmentId.trim();
+      filtered = filtered.filter(app =>
+        app.appointmentId.toString().includes(searchId)
+      );
+    }
+
+    // Location filter
+    if (this.appointmentFilters.location.trim()) {
+      const searchLocation = this.appointmentFilters.location.toLowerCase().trim();
+      filtered = filtered.filter(app =>
+        app.location.toLowerCase().includes(searchLocation)
+      );
+    }
+
+    // Price range filter
+    if (this.appointmentFilters.priceMin !== null) {
+      filtered = filtered.filter(app => app.servicePrice >= this.appointmentFilters.priceMin!);
+    }
+
+    if (this.appointmentFilters.priceMax !== null) {
+      filtered = filtered.filter(app => app.servicePrice <= this.appointmentFilters.priceMax!);
+    }
+
+    return filtered;
+  }
+
+  getFilteredSlots(): AvailabilitySlotResponseDto[] {
+    let filtered = [...this.availabilitySlots];
+
+    // Status filter
+    if (this.slotFilters.status !== 'all') {
+      filtered = filtered.filter(slot => {
+        const isExpired = this.isSlotExpired(slot);
+        const isBooked = slot.isBooked;
+
+        switch (this.slotFilters.status) {
+          case 'available':
+            return !isBooked && !isExpired;
+          case 'booked':
+            return isBooked && !isExpired;
+          case 'expired':
+            return isExpired;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Date range filter
+    if (this.slotFilters.dateFrom) {
+      const fromDate = new Date(this.slotFilters.dateFrom);
+      fromDate.setHours(0, 0, 0, 0);
+      filtered = filtered.filter(slot => {
+        const slotDate = new Date(slot.startTime);
+        return slotDate >= fromDate;
+      });
+    }
+
+    if (this.slotFilters.dateTo) {
+      const toDate = new Date(this.slotFilters.dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(slot => {
+        const slotDate = new Date(slot.startTime);
+        return slotDate <= toDate;
+      });
+    }
+
+    // Service filter
+    if (this.slotFilters.serviceId) {
+      filtered = filtered.filter(slot => slot.serviceId === this.slotFilters.serviceId);
+    }
+
+    // Slot ID filter
+    if (this.slotFilters.slotId.trim()) {
+      const searchId = this.slotFilters.slotId.trim();
+      filtered = filtered.filter(slot =>
+        slot.slotId.toString().includes(searchId)
+      );
+    }
+
+    // Time range filter
+    if (this.slotFilters.timeFrom) {
+      filtered = filtered.filter(slot => {
+        const slotTime = this.getTimeFromDateTime(slot.startTime);
+        return slotTime >= this.slotFilters.timeFrom;
+      });
+    }
+
+    if (this.slotFilters.timeTo) {
+      filtered = filtered.filter(slot => {
+        const slotTime = this.getTimeFromDateTime(slot.endTime);
+        return slotTime <= this.slotFilters.timeTo;
+      });
+    }
+
+    return filtered;
+  }
+
+  clearAppointmentFilters(): void {
+    this.appointmentFilters = {
+      status: 'all',
+      dateFrom: null,
+      dateTo: null,
+      serviceId: null,
+      customerId: '',
+      appointmentId: '',
+      location: '',
+      priceMin: null,
+      priceMax: null
+    };
+  }
+
+  clearSlotFilters(): void {
+    this.slotFilters = {
+      status: 'all',
+      dateFrom: null,
+      dateTo: null,
+      serviceId: null,
+      slotId: '',
+      timeFrom: '',
+      timeTo: ''
+    };
+  }
+
+  getActiveAppointmentFiltersCount(): number {
+    let count = 0;
+    if (this.appointmentFilters.status !== 'all') count++;
+    if (this.appointmentFilters.dateFrom) count++;
+    if (this.appointmentFilters.dateTo) count++;
+    if (this.appointmentFilters.serviceId) count++;
+    if (this.appointmentFilters.customerId.trim()) count++;
+    if (this.appointmentFilters.appointmentId.trim()) count++;
+    if (this.appointmentFilters.location.trim()) count++;
+    if (this.appointmentFilters.priceMin !== null) count++;
+    if (this.appointmentFilters.priceMax !== null) count++;
+    return count;
+  }
+
+  getActiveSlotFiltersCount(): number {
+    let count = 0;
+    if (this.slotFilters.status !== 'all') count++;
+    if (this.slotFilters.dateFrom) count++;
+    if (this.slotFilters.dateTo) count++;
+    if (this.slotFilters.serviceId) count++;
+    if (this.slotFilters.slotId.trim()) count++;
+    if (this.slotFilters.timeFrom) count++;
+    if (this.slotFilters.timeTo) count++;
+    return count;
   }
 
   cancelAppointment(appointment: Appointment): void {
@@ -202,12 +456,12 @@ export class AdminDashboardComponent implements OnInit {
         this.apiService.put(`appointments/${appointment.appointmentId}/cancel`, {})
           .subscribe({
             next: () => {
-              this.snackBar.open('Appointment cancelled successfully', 'Close', { duration: 3000 });
+              this.snackBar.open('Appointment cancelled successfully', 'Close', {duration: 3000});
               this.loadAppointments();
             },
             error: (error) => {
               console.error('Error cancelling appointment:', error);
-              this.snackBar.open('Failed to cancel appointment', 'Close', { duration: 3000 });
+              this.snackBar.open('Failed to cancel appointment', 'Close', {duration: 3000});
             }
           });
       }
@@ -215,15 +469,15 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   updateAppointmentStatus(appointment: Appointment, newStatus: string): void {
-    this.apiService.put(`appointments/${appointment.appointmentId}/status`, { status: newStatus })
+    this.apiService.put(`appointments/${appointment.appointmentId}/status`, {status: newStatus})
       .subscribe({
         next: () => {
-          this.snackBar.open(`Appointment status updated to ${newStatus}`, 'Close', { duration: 3000 });
+          this.snackBar.open(`Appointment status updated to ${newStatus}`, 'Close', {duration: 3000});
           this.loadAppointments();
         },
         error: (error) => {
           console.error('Error updating appointment status:', error);
-          this.snackBar.open('Failed to update appointment status', 'Close', { duration: 3000 });
+          this.snackBar.open('Failed to update appointment status', 'Close', {duration: 3000});
         }
       });
   }
@@ -240,13 +494,13 @@ export class AdminDashboardComponent implements OnInit {
 
       this.apiService.post('availability', slotData).subscribe({
         next: () => {
-          this.snackBar.open('Availability slot created successfully', 'Close', { duration: 3000 });
+          this.snackBar.open('Availability slot created successfully', 'Close', {duration: 3000});
           this.newSlotForm.reset();
           this.loadAvailabilitySlots();
         },
         error: (error) => {
           console.error('Error creating availability slot:', error);
-          this.snackBar.open('Failed to create availability slot', 'Close', { duration: 3000 });
+          this.snackBar.open('Failed to create availability slot', 'Close', {duration: 3000});
         }
       });
     }
@@ -265,12 +519,12 @@ export class AdminDashboardComponent implements OnInit {
       if (result) {
         this.apiService.delete(`availability/${slot.slotId}`).subscribe({
           next: () => {
-            this.snackBar.open('Availability slot deleted successfully', 'Close', { duration: 3000 });
+            this.snackBar.open('Availability slot deleted successfully', 'Close', {duration: 3000});
             this.loadAvailabilitySlots();
           },
           error: (error) => {
             console.error('Error deleting availability slot:', error);
-            this.snackBar.open('Failed to delete availability slot', 'Close', { duration: 3000 });
+            this.snackBar.open('Failed to delete availability slot', 'Close', {duration: 3000});
           }
         });
       }
@@ -279,7 +533,7 @@ export class AdminDashboardComponent implements OnInit {
 
   toggleSlotAvailability(slot: AvailabilitySlotResponseDto): void {
     if (this.isSlotExpired(slot)) {
-      this.snackBar.open('Cannot modify expired slots', 'Close', { duration: 3000 });
+      this.snackBar.open('Cannot modify expired slots', 'Close', {duration: 3000});
       return;
     }
 
@@ -305,13 +559,13 @@ export class AdminDashboardComponent implements OnInit {
             const message = slot.isBooked ?
               'Booking released successfully - slot is now available' :
               'Slot marked as booked';
-            this.snackBar.open(message, 'Close', { duration: 3000 });
+            this.snackBar.open(message, 'Close', {duration: 3000});
             this.loadAvailabilitySlots();
             this.loadAppointments(); // Reload appointments in case this affects them
           },
           error: (error) => {
             console.error('Error updating slot availability:', error);
-            this.snackBar.open('Failed to update slot availability', 'Close', { duration: 3000 });
+            this.snackBar.open('Failed to update slot availability', 'Close', {duration: 3000});
           }
         });
       }
@@ -327,11 +581,16 @@ export class AdminDashboardComponent implements OnInit {
 
   getStatusColor(status: string): string {
     switch (status) {
-      case 'PENDING': return 'warn';
-      case 'CONFIRMED': return 'primary';
-      case 'CANCELLED': return 'accent';
-      case 'COMPLETED': return 'primary';
-      default: return '';
+      case 'PENDING':
+        return 'warn';
+      case 'CONFIRMED':
+        return 'primary';
+      case 'CANCELLED':
+        return 'accent';
+      case 'COMPLETED':
+        return 'primary';
+      default:
+        return '';
     }
   }
 
@@ -345,7 +604,7 @@ export class AdminDashboardComponent implements OnInit {
   getTimeFromDateTime(dateTime: string): string {
     if (!dateTime) return '';
     const date = new Date(dateTime);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: false});
   }
 
   getTimeRangeFromSlot(slot: AvailabilitySlotResponseDto): string {

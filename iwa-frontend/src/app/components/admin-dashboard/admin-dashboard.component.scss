@@ -16,6 +16,67 @@
     margin-bottom: 20px;
   }
 
+  // Enhanced Filter Panel
+  .filter-panel {
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+
+    ::ng-deep .mat-expansion-panel-header {
+      height: 56px;
+
+      .mat-panel-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .filter-count-chip {
+          background-color: #1976d2;
+          color: white;
+          font-size: 0.75em;
+          height: 20px;
+          min-height: 20px;
+          line-height: 20px;
+          padding: 0 8px;
+        }
+      }
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      padding: 16px 0;
+
+      .filter-actions {
+        display: flex;
+        align-items: flex-end;
+
+        button {
+          height: 40px;
+        }
+      }
+    }
+  }
+
+  // Results Summary
+  .results-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+
+    .results-count {
+      font-weight: 500;
+      color: #555;
+    }
+  }
+
+  // Legacy filter field (keeping for backwards compatibility)
   .filter-field {
     width: 200px;
     margin-bottom: 20px;
@@ -27,15 +88,30 @@
     margin-top: 20px;
 
     .customer-info {
-      .email {
-        font-size: 0.9em;
+      .user-id {
+        font-size: 0.8em;
         color: #666;
+        margin-top: 2px;
+        display: block;
       }
     }
 
-    .time {
-      font-size: 0.9em;
-      color: #666;
+    .service-info {
+      .service-duration {
+        font-size: 0.8em;
+        color: #666;
+        margin-top: 2px;
+        display: block;
+      }
+    }
+
+    .datetime-info {
+      small {
+        font-size: 0.8em;
+        color: #666;
+        margin-top: 2px;
+        display: block;
+      }
     }
 
     .status-badge {
@@ -126,18 +202,53 @@
     }
   }
 
-  // No Data Message
+  // Enhanced No Data Message
   .no-data {
     text-align: center;
     padding: 40px;
     color: #666;
     font-size: 1.1em;
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    p {
+      margin: 0 0 16px 0;
+    }
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    padding: 10px;
+
+    .filters-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .add-slot-form .form-row {
+      flex-direction: column;
+
+      mat-form-field {
+        min-width: unset;
+      }
+    }
+
+    .results-summary {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
   }
 
   // Material Overrides
   ::ng-deep {
     .mat-mdc-table {
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .mat-mdc-header-row {
@@ -159,6 +270,25 @@
 
     .mat-mdc-tab.mdc-tab--active {
       background-color: white;
+    }
+
+    // Enhanced form field styling
+    .mat-mdc-form-field {
+      .mat-mdc-text-field-wrapper {
+        background-color: white;
+      }
+    }
+
+    // Chip styling for filter counts
+    .mat-mdc-chip {
+      font-size: 0.75em;
+    }
+
+    // Expansion panel content
+    .mat-expansion-panel-content {
+      .mat-expansion-panel-body {
+        padding: 0 24px 16px;
+      }
     }
   }
 }

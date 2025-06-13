@@ -10,17 +10,115 @@
             <mat-card-title>Manage Appointments</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            <!-- Status Filter -->
-            <mat-form-field appearance="outline" class="filter-field">
-              <mat-label>Filter by Status</mat-label>
-              <mat-select [(ngModel)]="statusFilter">
-                <mat-option value="all">All</mat-option>
-                <mat-option value="PENDING">Pending</mat-option>
-                <mat-option value="CONFIRMED">Confirmed</mat-option>
-                <mat-option value="CANCELLED">Cancelled</mat-option>
-                <mat-option value="COMPLETED">Completed</mat-option>
-              </mat-select>
-            </mat-form-field>
+            <!-- Enhanced Filters -->
+            <mat-expansion-panel
+              [(expanded)]="appointmentFiltersExpanded"
+              class="filter-panel">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>filter_list</mat-icon>
+                  Filters
+                  <mat-chip *ngIf="getActiveAppointmentFiltersCount() > 0"
+                            class="filter-count-chip">
+                    {{ getActiveAppointmentFiltersCount() }}
+                  </mat-chip>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="filters-grid">
+                <!-- Row 1: Status, Service, Date Range -->
+                <mat-form-field appearance="outline">
+                  <mat-label>Status</mat-label>
+                  <mat-select [(ngModel)]="appointmentFilters.status">
+                    <mat-option *ngFor="let status of appointmentStatusOptions" [value]="status.value">
+                      {{ status.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Service</mat-label>
+                  <mat-select [(ngModel)]="appointmentFilters.serviceId">
+                    <mat-option [value]="null">All Services</mat-option>
+                    <mat-option *ngFor="let service of services" [value]="service.serviceId">
+                      {{ service.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Date From</mat-label>
+                  <input matInput [matDatepicker]="dateFromPicker" [(ngModel)]="appointmentFilters.dateFrom">
+                  <mat-datepicker-toggle matSuffix [for]="dateFromPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #dateFromPicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Date To</mat-label>
+                  <input matInput [matDatepicker]="dateToPicker" [(ngModel)]="appointmentFilters.dateTo">
+                  <mat-datepicker-toggle matSuffix [for]="dateToPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #dateToPicker></mat-datepicker>
+                </mat-form-field>
+
+                <!-- Row 2: Customer, Appointment ID, Location -->
+                <mat-form-field appearance="outline">
+                  <mat-label>Customer (Name or ID)</mat-label>
+                  <input matInput [(ngModel)]="appointmentFilters.customerId"
+                         placeholder="Search by name or user ID">
+                  <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Appointment ID</mat-label>
+                  <input matInput [(ngModel)]="appointmentFilters.appointmentId"
+                         placeholder="Search by appointment ID">
+                  <mat-icon matSuffix>tag</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Location</mat-label>
+                  <input matInput [(ngModel)]="appointmentFilters.location"
+                         placeholder="Search by location">
+                  <mat-icon matSuffix>location_on</mat-icon>
+                </mat-form-field>
+
+                <!-- Row 3: Price Range and Actions -->
+                <mat-form-field appearance="outline">
+                  <mat-label>Min Price</mat-label>
+                  <input matInput type="number" [(ngModel)]="appointmentFilters.priceMin"
+                         placeholder="0" min="0">
+                  <span matSuffix>$</span>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Max Price</mat-label>
+                  <input matInput type="number" [(ngModel)]="appointmentFilters.priceMax"
+                         placeholder="1000" min="0">
+                  <span matSuffix>$</span>
+                </mat-form-field>
+
+                <div class="filter-actions">
+                  <button mat-raised-button color="warn" (click)="clearAppointmentFilters()"
+                          [disabled]="getActiveAppointmentFiltersCount() === 0">
+                    <mat-icon>clear</mat-icon>
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
+            </mat-expansion-panel>
+
+            <!-- Results Summary -->
+            <div class="results-summary">
+              <span class="results-count">
+                Showing {{ getFilteredAppointments().length }} of {{ appointments.length }} appointments
+              </span>
+              <button mat-icon-button
+                      [color]="appointmentFiltersExpanded ? 'primary' : ''"
+                      (click)="appointmentFiltersExpanded = !appointmentFiltersExpanded"
+                      matTooltip="Toggle Filters">
+                <mat-icon>{{ appointmentFiltersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </button>
+            </div>
 
             <!-- Appointments Table -->
             <table mat-table [dataSource]="getFilteredAppointments()" class="appointments-table">
@@ -34,19 +132,28 @@
                 <td mat-cell *matCellDef="let appointment">
                   <div class="customer-info">
                     <div>{{ appointment.userName }}</div>
+                    <small class="user-id">ID: {{ appointment.userId }}</small>
                   </div>
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="service">
                 <th mat-header-cell *matHeaderCellDef>Service</th>
-                <td mat-cell *matCellDef="let appointment">{{ appointment.serviceName }}</td>
+                <td mat-cell *matCellDef="let appointment">
+                  <div class="service-info">
+                    <div>{{ appointment.serviceName }}</div>
+                    <small class="service-duration">{{ appointment.serviceDurationMin }} min</small>
+                  </div>
+                </td>
               </ng-container>
 
               <ng-container matColumnDef="dateTime">
-                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <th mat-header-cell *matHeaderCellDef>Date & Time</th>
                 <td mat-cell *matCellDef="let appointment">
-                  <div>{{ appointment.scheduledAt }}</div>
+                  <div class="datetime-info">
+                    <div>{{ getDateFromDateTime(appointment.scheduledAt) }}</div>
+                    <small>{{ getTimeFromDateTime(appointment.scheduledAt) }}</small>
+                  </div>
                 </td>
               </ng-container>
 
@@ -95,7 +202,12 @@
             </table>
 
             <div class="no-data" *ngIf="getFilteredAppointments().length === 0">
-              No appointments found.
+              <mat-icon>search_off</mat-icon>
+              <p>No appointments found matching the current filters.</p>
+              <button mat-button color="primary" (click)="clearAppointmentFilters()"
+                      *ngIf="getActiveAppointmentFiltersCount() > 0">
+                Clear Filters
+              </button>
             </div>
           </mat-card-content>
         </mat-card>
@@ -149,8 +261,101 @@
               </form>
             </div>
 
+            <!-- Enhanced Slot Filters -->
+            <mat-expansion-panel
+              [(expanded)]="slotFiltersExpanded"
+              class="filter-panel">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>filter_list</mat-icon>
+                  Filters
+                  <mat-chip *ngIf="getActiveSlotFiltersCount() > 0"
+                            class="filter-count-chip">
+                    {{ getActiveSlotFiltersCount() }}
+                  </mat-chip>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="filters-grid">
+                <!-- Row 1: Status, Service, Date Range -->
+                <mat-form-field appearance="outline">
+                  <mat-label>Status</mat-label>
+                  <mat-select [(ngModel)]="slotFilters.status">
+                    <mat-option *ngFor="let status of slotStatusOptions" [value]="status.value">
+                      {{ status.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Service</mat-label>
+                  <mat-select [(ngModel)]="slotFilters.serviceId">
+                    <mat-option [value]="null">All Services</mat-option>
+                    <mat-option *ngFor="let service of services" [value]="service.serviceId">
+                      {{ service.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Date From</mat-label>
+                  <input matInput [matDatepicker]="slotDateFromPicker" [(ngModel)]="slotFilters.dateFrom">
+                  <mat-datepicker-toggle matSuffix [for]="slotDateFromPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #slotDateFromPicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Date To</mat-label>
+                  <input matInput [matDatepicker]="slotDateToPicker" [(ngModel)]="slotFilters.dateTo">
+                  <mat-datepicker-toggle matSuffix [for]="slotDateToPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #slotDateToPicker></mat-datepicker>
+                </mat-form-field>
+
+                <!-- Row 2: Slot ID, Time Range -->
+                <mat-form-field appearance="outline">
+                  <mat-label>Slot ID</mat-label>
+                  <input matInput [(ngModel)]="slotFilters.slotId"
+                         placeholder="Search by slot ID">
+                  <mat-icon matSuffix>tag</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Time From</mat-label>
+                  <input matInput type="time" [(ngModel)]="slotFilters.timeFrom">
+                  <mat-icon matSuffix>schedule</mat-icon>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Time To</mat-label>
+                  <input matInput type="time" [(ngModel)]="slotFilters.timeTo">
+                  <mat-icon matSuffix>schedule</mat-icon>
+                </mat-form-field>
+
+                <div class="filter-actions">
+                  <button mat-raised-button color="warn" (click)="clearSlotFilters()"
+                          [disabled]="getActiveSlotFiltersCount() === 0">
+                    <mat-icon>clear</mat-icon>
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
+            </mat-expansion-panel>
+
+            <!-- Results Summary -->
+            <div class="results-summary">
+              <span class="results-count">
+                Showing {{ getFilteredSlots().length }} of {{ availabilitySlots.length }} slots
+              </span>
+              <button mat-icon-button
+                      [color]="slotFiltersExpanded ? 'primary' : ''"
+                      (click)="slotFiltersExpanded = !slotFiltersExpanded"
+                      matTooltip="Toggle Filters">
+                <mat-icon>{{ slotFiltersExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+              </button>
+            </div>
+
             <!-- Availability Slots Table -->
-            <table mat-table [dataSource]="availabilitySlots" class="slots-table">
+            <table mat-table [dataSource]="getFilteredSlots()" class="slots-table">
               <ng-container matColumnDef="slotId">
                 <th mat-header-cell *matHeaderCellDef>ID</th>
                 <td mat-cell *matCellDef="let slot">#{{ slot.slotId }}</td>
@@ -210,8 +415,13 @@
                   [class.expired-row]="isSlotExpired(row)"></tr>
             </table>
 
-            <div class="no-data" *ngIf="availabilitySlots.length === 0">
-              No availability slots found.
+            <div class="no-data" *ngIf="getFilteredSlots().length === 0">
+              <mat-icon>search_off</mat-icon>
+              <p>No availability slots found matching the current filters.</p>
+              <button mat-button color="primary" (click)="clearSlotFilters()"
+                      *ngIf="getActiveSlotFiltersCount() > 0">
+                Clear Filters
+              </button>
             </div>
           </mat-card-content>
         </mat-card>

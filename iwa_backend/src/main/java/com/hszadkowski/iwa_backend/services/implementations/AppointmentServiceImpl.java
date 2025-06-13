@@ -175,7 +175,15 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new AppointmentNotFoundException(
                         "Appointment with ID " + appointmentId + " not found"));
 
-        if (!appointment.getAppUser().getEmail().equals(userEmail)) {
+        // Get the user who is making the cancellation request
+        AppUser requestingUser = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if user can cancel this appointment (own appointment or admin user)
+        boolean isOwner = appointment.getAppUser().getEmail().equals(userEmail);
+        boolean isAdmin = "ROLE_ADMIN".equalsIgnoreCase(requestingUser.getRole());
+
+        if (!isOwner && !isAdmin) {
             throw new AccessDeniedException("You can only cancel your own appointments");
         }
 
@@ -189,8 +197,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         sendCancellationEmail(appointment);
 
-        // Delete from Google Calendar if user is connected
-        syncAppointmentToGoogleCalendar(appointment, userEmail, "delete");
+        // Delete from Google Calendar of the appointment owner
+        syncAppointmentToGoogleCalendar(appointment, appointment.getAppUser().getEmail(), "delete");
     }
 
     @Override
