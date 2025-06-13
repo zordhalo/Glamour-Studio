@@ -5,9 +5,11 @@ import { VerifyEmailComponent } from './components/verify-email/verify-email.com
 import { ServicesListComponent } from './components/services-list/services-list.component';
 import { LandingComponent } from './components/landing/landing.component';
 import { authGuard } from './guards/auth-guard';
+import { adminGuard } from './guards/admin-guard';
 import { ServiceDetailComponent } from './components/service-detail/service-detail.component';
 import { UserDashboardComponent } from './components/user-dashboard/user-dashboard.component';
 import { UserSettingsComponent } from './components/user-settings/user-settings.component';
+import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -25,5 +27,10 @@ export const routes: Routes = [
     path: 'settings',
     component: UserSettingsComponent,
     canActivate: [authGuard],
+  },
+  {
+    path: 'admin',
+    component: AdminDashboardComponent,
+    canActivate: [adminGuard],
   },
 ];
