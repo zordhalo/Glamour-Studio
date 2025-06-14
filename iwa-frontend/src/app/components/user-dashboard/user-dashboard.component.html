@@ -7,10 +7,20 @@
       </h1>
       <p class="dashboard-subtitle">Track and manage your beauty appointments with ease</p>
     </div>
-    <button mat-raised-button class="book-button" (click)="bookNewAppointment()">
-      <mat-icon>add_circle</mat-icon>
-      Book New Appointment
-    </button>
+    <div class="header-actions">
+      <button mat-raised-button class="book-button" (click)="bookNewAppointment()">
+        <mat-icon>add_circle</mat-icon>
+        Book New Appointment
+      </button>
+
+      @if (!calendarSyncStatus().syncEnabled) {
+        <button mat-stroked-button class="calendar-sync-button" (click)="goToSettings()"
+                matTooltip="Connect Google Calendar to sync your appointments">
+          <mat-icon>event</mat-icon>
+          Connect Calendar
+        </button>
+      }
+    </div>
   </div>
 
   @if (isLoading()) {
@@ -129,6 +139,28 @@
                   <mat-divider></mat-divider>
 
                   <div class="card-actions">
+                    @if (canSyncToCalendar(appointment)) {
+                      <button mat-stroked-button
+                              class="action-button calendar-sync-btn"
+                              (click)="syncAppointmentToCalendar(appointment)"
+                              [disabled]="appointment.isSyncing"
+                              matTooltip="Sync to Google Calendar">
+                        @if (appointment.isSyncing) {
+                          <mat-spinner diameter="18"></mat-spinner>
+                        } @else {
+                          <mat-icon>event</mat-icon>
+                        }
+                        <span>{{ appointment.isSyncing ? 'Syncing...' : 'Add to Calendar' }}</span>
+                      </button>
+                    }
+
+                    @if (appointment.calendarEventId) {
+                      <div class="calendar-synced-badge" matTooltip="Synced to Google Calendar">
+                        <mat-icon>check_circle</mat-icon>
+                        <span>In Calendar</span>
+                      </div>
+                    }
+
                     @if (canReschedule(appointment)) {
                       <button mat-stroked-button class="action-button reschedule-btn" (click)="openRescheduleDialog(appointment)">
                         <mat-icon>update</mat-icon>

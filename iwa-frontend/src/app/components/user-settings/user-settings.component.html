@@ -6,7 +6,7 @@
       </button>
       <h1 class="settings-title">
         <mat-icon class="title-icon">settings</mat-icon>
-        Account SettingsComponent
+        Account Settings
       </h1>
     </div>
 
@@ -92,6 +92,91 @@
               </button>
             </div>
           </form>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Google Calendar Integration Card -->
+      <mat-card class="calendar-sync-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>event</mat-icon>
+            Google Calendar Integration
+          </mat-card-title>
+          <mat-card-subtitle>Sync your beauty appointments with Google Calendar</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          @if (isLoadingCalendarStatus()) {
+            <div class="calendar-loading">
+              <mat-spinner diameter="24"></mat-spinner>
+              <span>Loading calendar sync status...</span>
+            </div>
+          } @else {
+            <div class="calendar-sync-content">
+              <div class="sync-status">
+                <div class="status-info">
+                  @if (calendarSyncStatus().syncEnabled) {
+                    <div class="status-badge connected">
+                      <mat-icon>check_circle</mat-icon>
+                      <span>Connected to Google Calendar</span>
+                    </div>
+                    @if (calendarSyncStatus().lastSyncTime) {
+                      <p class="sync-time">Last synced: {{ calendarSyncStatus().lastSyncTime | date:'medium' }}</p>
+                    }
+                  } @else {
+                    <div class="status-badge disconnected">
+                      <mat-icon>calendar_today</mat-icon>
+                      <span>Not connected to Google Calendar</span>
+                    </div>
+                  }
+                </div>
+
+                <mat-slide-toggle
+                  [checked]="calendarSyncStatus().syncEnabled"
+                  [disabled]="isSyncingCalendar()"
+                  (change)="toggleCalendarSync()"
+                  color="primary">
+                  {{ calendarSyncStatus().syncEnabled ? 'Sync Enabled' : 'Enable Sync' }}
+                </mat-slide-toggle>
+              </div>
+
+              <mat-divider></mat-divider>
+
+              <div class="sync-benefits">
+                <h4>Benefits of Calendar Sync:</h4>
+                <ul>
+                  <li>
+                    <mat-icon>notifications_active</mat-icon>
+                    <span>Automatic reminders for your appointments</span>
+                  </li>
+                  <li>
+                    <mat-icon>sync</mat-icon>
+                    <span>Real-time updates when appointments change</span>
+                  </li>
+                  <li>
+                    <mat-icon>devices</mat-icon>
+                    <span>Access your schedule from any device</span>
+                  </li>
+                  <li>
+                    <mat-icon>event_available</mat-icon>
+                    <span>Prevent double-booking with calendar conflicts</span>
+                  </li>
+                </ul>
+              </div>
+
+              @if (calendarSyncStatus().syncEnabled) {
+                <div class="sync-actions">
+                  <button mat-stroked-button
+                          class="sync-now-button"
+                          (click)="syncAllAppointments()"
+                          [disabled]="isSyncingCalendar()">
+                    <mat-icon>sync</mat-icon>
+                    <span>Sync All Appointments Now</span>
+                  </button>
+                </div>
+              }
+            </div>
+          }
         </mat-card-content>
       </mat-card>
 

@@ -340,6 +340,199 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   }
 }
 
+// Google Calendar Sync Card
+.calendar-sync-card {
+  border-radius: 16px !important;
+  margin-bottom: 2rem;
+  box-shadow: $card-shadow !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+  &:hover {
+    box-shadow: $card-hover-shadow !important;
+  }
+
+  mat-card-header {
+    padding: 2rem 2rem 1rem;
+
+    mat-card-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      mat-icon {
+        color: #4285f4; // Google blue
+      }
+    }
+
+    mat-card-subtitle {
+      font-size: 1rem;
+      color: #7f8c8d;
+      margin-top: 0.5rem;
+    }
+  }
+
+  mat-card-content {
+    padding: 0 2rem 2rem;
+  }
+}
+
+.calendar-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  color: #7f8c8d;
+}
+
+.calendar-sync-content {
+  .sync-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  .status-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    width: fit-content;
+
+    &.connected {
+      background: #e8f5e9;
+      color: #2e7d32;
+
+      mat-icon {
+        color: #2e7d32;
+      }
+    }
+
+    &.disconnected {
+      background: #f3f4f6;
+      color: #6b7280;
+
+      mat-icon {
+        color: #6b7280;
+      }
+    }
+  }
+
+  .sync-time {
+    font-size: 0.875rem;
+    color: #95a5a6;
+    margin: 0;
+    padding-left: 2rem;
+  }
+
+  mat-divider {
+    margin: 1.5rem 0;
+  }
+
+  .sync-benefits {
+    margin-bottom: 1.5rem;
+
+    h4 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0 0 1rem;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+
+      li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        color: #5a6c7d;
+
+        mat-icon {
+          color: #4285f4;
+          font-size: 1.25rem;
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+
+        span {
+          line-height: 1.5;
+        }
+      }
+    }
+  }
+
+  .sync-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+
+    .sync-now-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #4285f4 !important;
+      border-color: #4285f4 !important;
+      padding: 0.75rem 1.5rem !important;
+      font-weight: 500 !important;
+      border-radius: 50px !important;
+      transition: all 0.2s ease !important;
+
+      &:hover:not(:disabled) {
+        background: rgba(66, 133, 244, 0.1) !important;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      mat-icon {
+        font-size: 1.125rem;
+      }
+    }
+  }
+}
+
+// Mat Slide Toggle Customization
+::ng-deep {
+  .calendar-sync-card {
+    .mat-mdc-slide-toggle {
+      .mdc-switch--selected {
+        .mdc-switch__handle-track {
+          background-color: #4285f4 !important;
+        }
+
+        .mdc-switch__track {
+          background-color: #4285f4 !important;
+        }
+      }
+    }
+  }
+}
+
 // Snackbar Styles
 ::ng-deep {
   .success-snackbar {
@@ -359,6 +552,20 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   .error-snackbar {
     .mdc-snackbar__surface {
       background: #e74c3c !important;
+    }
+
+    .mat-mdc-snack-bar-label {
+      color: white !important;
+    }
+
+    .mat-mdc-button {
+      color: white !important;
+    }
+  }
+
+  .info-snackbar {
+    .mdc-snackbar__surface {
+      background: #3498db !important;
     }
 
     .mat-mdc-snack-bar-label {

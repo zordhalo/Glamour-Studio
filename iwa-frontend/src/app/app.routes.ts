@@ -10,6 +10,7 @@ import { ServiceDetailComponent } from './components/service-detail/service-deta
 import { UserDashboardComponent } from './components/user-dashboard/user-dashboard.component';
 import { UserSettingsComponent } from './components/user-settings/user-settings.component';
 import { AdminDashboardComponent } from './components/admin-dashboard/admin-dashboard.component';
+import { OAuthCallbackComponent } from './components/oauth-callback/oauth-callback.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -33,4 +34,8 @@ export const routes: Routes = [
     component: AdminDashboardComponent,
     canActivate: [adminGuard],
   },
+  {
+    path: 'oauth/callback',
+    component: OAuthCallbackComponent
+  }
 ];
