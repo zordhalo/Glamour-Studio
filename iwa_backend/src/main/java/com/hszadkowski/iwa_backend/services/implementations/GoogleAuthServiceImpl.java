@@ -21,6 +21,9 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     @Value("${google.auth.frontend.client.id}")
     private String googleFrontendClientId;
 
+    @Value("${GOOGLE_CALENDAR_CLIENT_ID}")
+    private String googleCalendarClientId;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Override
@@ -46,7 +49,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
                 String issuer = (String) tokenInfo.get("iss");
 
                 // Validate the token
-                boolean validAudience = googleFrontendClientId.equals(audience);
+                boolean validAudience = googleCalendarClientId.equals(audience);
                 boolean validIssuer = "https://accounts.google.com".equals(issuer) ||
                                      "accounts.google.com".equals(issuer);
 
@@ -69,7 +72,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
                 Map<String, Object> tokenInfo = response.getBody();
                 String audience = (String) tokenInfo.get("audience");
 
-                return googleFrontendClientId.equals(audience);
+                return googleCalendarClientId.equals(audience);
             }
             return false;
         } catch (Exception e) {
