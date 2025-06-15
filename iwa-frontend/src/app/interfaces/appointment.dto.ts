@@ -11,6 +11,9 @@ export interface AppointmentResponseDto {
   location: string;
   scheduledAt: string;
   description: string;
+  calendarEventId?: string;
+  calendarSyncStatus?: 'SYNCED' | 'PENDING' | 'FAILED' | 'NOT_SYNCED';
+  lastCalendarSync?: string;
 }
 
 export interface BookAppointmentDto {

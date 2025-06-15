@@ -10,11 +10,18 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { GoogleCalendarService, GoogleCalendarSyncStatus } from '../../services/google-calendar.service';
 import { AppointmentResponseDto } from '../../interfaces/appointment.dto';
 import { RescheduleDialogComponent } from './reschedule-dialog/reschedule-dialog.component';
 import { CancelConfirmDialogComponent } from './cancel-confirm-dialog/cancel-confirm-dialog.component';
+
+interface AppointmentWithSyncStatus extends AppointmentResponseDto {
+  isSyncing?: boolean;
+  calendarEventId?: string;
+}
 
 @Component({
   selector: 'app-user-dashboard',
@@ -30,15 +37,22 @@ import { CancelConfirmDialogComponent } from './cancel-confirm-dialog/cancel-con
     MatDialogModule,
     MatBadgeModule,
     MatTooltipModule,
-    MatDividerModule
+    MatDividerModule,
+    MatSnackBarModule
   ],
   templateUrl: './user-dashboard.component.html',
   styleUrls: ['./user-dashboard.component.scss']
 })
 export class UserDashboardComponent implements OnInit {
-  appointments = signal<AppointmentResponseDto[]>([]);
+  appointments = signal<AppointmentWithSyncStatus[]>([]);
   isLoading = signal(true);
   selectedTab = signal(0);
+
+  // Google Calendar sync status
+  calendarSyncStatus = signal<GoogleCalendarSyncStatus>({
+    isSynced: false,
+    syncEnabled: false
+  });
 
   upcomingAppointments = computed(() =>
     this.appointments()
@@ -54,17 +68,20 @@ export class UserDashboardComponent implements OnInit {
 
   constructor(
     private apiService: ApiService,
+    private googleCalendarService: GoogleCalendarService,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadAppointments();
+    this.loadCalendarSyncStatus();
   }
 
   loadAppointments(): void {
     this.isLoading.set(true);
-    this.apiService.get<AppointmentResponseDto[]>('appointments/my').subscribe({
+    this.apiService.get<AppointmentWithSyncStatus[]>('appointments/my').subscribe({
       next: (data) => {
         this.appointments.set(data);
         this.isLoading.set(false);
@@ -72,6 +89,17 @@ export class UserDashboardComponent implements OnInit {
       error: (err) => {
         console.error('Failed to fetch appointments', err);
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  loadCalendarSyncStatus(): void {
+    this.googleCalendarService.getSyncStatus().subscribe({
+      next: (status) => {
+        this.calendarSyncStatus.set(status);
+      },
+      error: (err) => {
+        console.error('Failed to fetch calendar sync status', err);
       }
     });
   }
@@ -120,6 +148,62 @@ export class UserDashboardComponent implements OnInit {
     return appointment.status === 'SCHEDULED' || appointment.status === 'CONFIRMED';
   }
 
+  canSyncToCalendar(appointment: AppointmentWithSyncStatus): boolean {
+    return this.calendarSyncStatus().syncEnabled &&
+           !appointment.calendarEventId &&
+           (appointment.status === 'SCHEDULED' || appointment.status === 'CONFIRMED');
+  }
+
+  syncAppointmentToCalendar(appointment: AppointmentWithSyncStatus): void {
+    // Update local state to show syncing
+    const appointments = this.appointments();
+    const index = appointments.findIndex(a => a.appointmentId === appointment.appointmentId);
+    if (index !== -1) {
+      appointments[index] = { ...appointments[index], isSyncing: true };
+      this.appointments.set([...appointments]);
+    }
+
+    this.googleCalendarService.syncAppointment(appointment.appointmentId).subscribe({
+      next: (response) => {
+        // Update appointment with calendar event ID
+        const updatedAppointments = this.appointments();
+        const idx = updatedAppointments.findIndex(a => a.appointmentId === appointment.appointmentId);
+        if (idx !== -1) {
+          updatedAppointments[idx] = {
+            ...updatedAppointments[idx],
+            isSyncing: false,
+            calendarEventId: response.calendarEventId
+          };
+          this.appointments.set([...updatedAppointments]);
+        }
+
+        this.snackBar.open('Appointment synced to Google Calendar!', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+      },
+      error: (err) => {
+        // Reset syncing state on error
+        const appointments = this.appointments();
+        const index = appointments.findIndex(a => a.appointmentId === appointment.appointmentId);
+        if (index !== -1) {
+          appointments[index] = { ...appointments[index], isSyncing: false };
+          this.appointments.set([...appointments]);
+        }
+
+        console.error('Failed to sync appointment', err);
+        this.snackBar.open('Failed to sync appointment. Please try again.', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
+  }
+
   openRescheduleDialog(appointment: AppointmentResponseDto): void {
     const dialogRef = this.dialog.open(RescheduleDialogComponent, {
       width: '600px',
@@ -165,5 +249,9 @@ export class UserDashboardComponent implements OnInit {
     if (serviceId) {
       this.router.navigate(['/services', serviceId]);
     }
+  }
+
+  goToSettings(): void {
+    this.router.navigate(['/settings']);
   }
 }

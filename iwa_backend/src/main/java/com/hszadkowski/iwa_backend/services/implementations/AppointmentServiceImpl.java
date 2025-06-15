@@ -19,7 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @org.springframework.stereotype.Service
@@ -225,6 +227,100 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         return mapToResponseDto(updatedAppointment);
+    }
+
+    @Override
+    public Map<String, Object> syncAppointmentToCalendar(Integer appointmentId, String userEmail) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // Check if user is connected to Google Calendar
+            if (!googleCalendarService.isUserConnectedToGoogleCalendar(userEmail)) {
+                result.put("success", false);
+                result.put("error", "Not connected to Google Calendar");
+                return result;
+            }
+
+            // Get the appointment
+            Appointment appointment = appointmentRepository.findById(appointmentId)
+                    .orElseThrow(() -> new AppointmentNotFoundException(
+                            "Appointment with ID " + appointmentId + " not found"));
+
+            // Verify the appointment belongs to the user
+            if (!appointment.getAppUser().getEmail().equals(userEmail)) {
+                throw new AccessDeniedException("You can only sync your own appointments");
+            }
+
+            // Check if appointment is in a valid state for syncing
+            if ("CANCELLED".equals(appointment.getStatus().getName())) {
+                result.put("success", false);
+                result.put("error", "Cannot sync cancelled appointment");
+                return result;
+            }
+
+            // Check if already synced
+            boolean alreadySynced = googleCalendarService.isAppointmentSynced(appointmentId, userEmail);
+            
+            // Use the existing helper method for the actual sync
+            // For manual sync, we always use "create" action which will create or update
+            syncAppointmentToGoogleCalendar(appointment, userEmail, alreadySynced ? "update" : "create");
+            
+            // Verify the sync was successful by checking if it's now synced
+            if (googleCalendarService.isAppointmentSynced(appointmentId, userEmail)) {
+                result.put("success", true);
+                result.put("calendarEventId", appointmentId.toString()); // We don't have direct access to calendar event ID here
+                log.info("Successfully synced appointment {} to Google Calendar for user {}", 
+                        appointmentId, userEmail);
+            } else {
+                result.put("success", false);
+                result.put("error", "Sync completed but appointment not found in calendar");
+            }
+            
+        } catch (AccessDeniedException e) {
+            log.error("Access denied for appointment {}: {}", appointmentId, e.getMessage());
+            result.put("success", false);
+            result.put("error", e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to sync appointment {} to calendar: {}", appointmentId, e.getMessage());
+            result.put("success", false);
+            result.put("error", "Failed to sync appointment: " + e.getMessage());
+        }
+        
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> syncAllAppointmentsToCalendar(String userEmail) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // Check if user is connected to Google Calendar
+            if (!googleCalendarService.isUserConnectedToGoogleCalendar(userEmail)) {
+                result.put("success", false);
+                result.put("error", "Not connected to Google Calendar");
+                result.put("syncedCount", 0);
+                result.put("failedCount", 0);
+                return result;
+            }
+
+            // Sync existing appointments using the GoogleCalendarService method
+            int syncedCount = googleCalendarService.syncExistingAppointments(userEmail);
+            
+            result.put("success", true);
+            result.put("syncedCount", syncedCount);
+            result.put("failedCount", 0); // The implementation doesn't track failed syncs
+            
+            log.info("Successfully synced {} appointments for user {}", syncedCount, userEmail);
+            
+        } catch (Exception e) {
+            log.error("Failed to sync all appointments for user {}: {}", userEmail, e.getMessage());
+            result.put("success", false);
+            result.put("error", "Failed to sync appointments: " + e.getMessage());
+            result.put("syncedCount", 0);
+            result.put("failedCount", 0);
+        }
+        
+        return result;
     }
 
     // Helper methods

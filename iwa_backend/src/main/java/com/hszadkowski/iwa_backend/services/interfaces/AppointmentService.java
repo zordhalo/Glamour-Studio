@@ -6,6 +6,7 @@ import com.hszadkowski.iwa_backend.dto.RescheduleAppointmentDto;
 import com.hszadkowski.iwa_backend.dto.UpdateAppointmentStatusDto;
 
 import java.util.List;
+import java.util.Map;
 
 public interface AppointmentService {
 
@@ -22,4 +23,8 @@ public interface AppointmentService {
     AppointmentResponseDto rescheduleAppointment(Integer appointmentId, RescheduleAppointmentDto rescheduleDto, String userEmail);
 
     AppointmentResponseDto updateAppointmentStatus(Integer appointmentId, UpdateAppointmentStatusDto statusUpdate);
+
+    Map<String, Object> syncAppointmentToCalendar(Integer appointmentId, String userEmail);
+
+    Map<String, Object> syncAllAppointmentsToCalendar(String userEmail);
 }

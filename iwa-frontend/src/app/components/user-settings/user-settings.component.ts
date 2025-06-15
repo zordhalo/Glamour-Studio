@@ -7,10 +7,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { GoogleCalendarService, GoogleCalendarSyncStatus } from '../../services/google-calendar.service';
 import { UserProfileDto, UserProfileUpdateDto } from '../../interfaces/user.dto';
 
 @Component({
@@ -25,6 +29,9 @@ import { UserProfileDto, UserProfileUpdateDto } from '../../interfaces/user.dto'
     MatInputModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
+    MatSlideToggleModule,
+    MatDividerModule,
+    MatTooltipModule,
     ReactiveFormsModule
   ],
   templateUrl: './user-settings.component.html',
@@ -36,9 +43,18 @@ export class UserSettingsComponent implements OnInit {
   isLoading = signal(true);
   userProfile = signal<UserProfileDto | null>(null);
 
+  // Google Calendar sync related
+  calendarSyncStatus = signal<GoogleCalendarSyncStatus>({
+    isSynced: false,
+    syncEnabled: false
+  });
+  isSyncingCalendar = signal(false);
+  isLoadingCalendarStatus = signal(true);
+
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
+    private googleCalendarService: GoogleCalendarService,
     private fb: FormBuilder,
     private snackBar: MatSnackBar,
     private router: Router
@@ -53,6 +69,7 @@ export class UserSettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUserProfile();
+    this.loadCalendarSyncStatus();
   }
 
   loadUserProfile(): void {
@@ -89,6 +106,20 @@ export class UserSettingsComponent implements OnInit {
             panelClass: ['error-snackbar']
           });
         }
+      }
+    });
+  }
+
+  loadCalendarSyncStatus(): void {
+    this.isLoadingCalendarStatus.set(true);
+    this.googleCalendarService.getSyncStatus().subscribe({
+      next: (status) => {
+        this.calendarSyncStatus.set(status);
+        this.isLoadingCalendarStatus.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to fetch calendar sync status', err);
+        this.isLoadingCalendarStatus.set(false);
       }
     });
   }
@@ -138,6 +169,90 @@ export class UserSettingsComponent implements OnInit {
       });
       this.profileForm.markAsPristine();
     }
+  }
+
+  // Google Calendar sync methods
+  toggleCalendarSync(): void {
+    const currentStatus = this.calendarSyncStatus();
+
+    if (currentStatus.syncEnabled) {
+      this.disableCalendarSync();
+    } else {
+      this.enableCalendarSync();
+    }
+  }
+
+  enableCalendarSync(): void {
+    this.isSyncingCalendar.set(true);
+
+    this.googleCalendarService.enableSync().subscribe({
+      next: () => {
+        this.snackBar.open('Google Calendar sync enabled successfully!', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+        this.loadCalendarSyncStatus();
+        this.isSyncingCalendar.set(false);
+
+        // Optionally sync all existing appointments
+        this.syncAllAppointments();
+      },
+      error: (err) => {
+        console.error('Failed to enable calendar sync', err);
+        this.snackBar.open('Failed to enable Google Calendar sync. Please try again.', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+        this.isSyncingCalendar.set(false);
+      }
+    });
+  }
+
+  disableCalendarSync(): void {
+    this.isSyncingCalendar.set(true);
+
+    this.googleCalendarService.disableSync().subscribe({
+      next: () => {
+        this.snackBar.open('Google Calendar sync disabled', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['info-snackbar']
+        });
+        this.loadCalendarSyncStatus();
+        this.isSyncingCalendar.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to disable calendar sync', err);
+        this.snackBar.open('Failed to disable calendar sync. Please try again.', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['error-snackbar']
+        });
+        this.isSyncingCalendar.set(false);
+      }
+    });
+  }
+
+  syncAllAppointments(): void {
+    this.googleCalendarService.syncAllAppointments().subscribe({
+      next: () => {
+        this.snackBar.open('All appointments synced to Google Calendar!', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'end',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+      },
+      error: (err) => {
+        console.error('Failed to sync appointments', err);
+      }
+    });
   }
 
   goBack(): void {

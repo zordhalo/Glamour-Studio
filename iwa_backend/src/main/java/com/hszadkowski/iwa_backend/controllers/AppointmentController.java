@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/appointments")
@@ -76,5 +77,21 @@ public class AppointmentController {
             @RequestBody @Valid UpdateAppointmentStatusDto statusUpdate) {
         AppointmentResponseDto updatedAppointment = appointmentService.updateAppointmentStatus(id, statusUpdate);
         return ResponseEntity.ok(updatedAppointment);
+    }
+
+    @PostMapping("/{appointmentId}/sync-to-calendar")
+    public ResponseEntity<Map<String, Object>> syncSingleAppointmentToCalendar(
+            @PathVariable Integer appointmentId,
+            Authentication authentication) {
+        String userEmail = authentication.getName();
+        Map<String, Object> result = appointmentService.syncAppointmentToCalendar(appointmentId, userEmail);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/sync-all-to-calendar")
+    public ResponseEntity<Map<String, Object>> syncAllAppointmentsToCalendar(Authentication authentication) {
+        String userEmail = authentication.getName();
+        Map<String, Object> result = appointmentService.syncAllAppointmentsToCalendar(userEmail);
+        return ResponseEntity.ok(result);
     }
 }

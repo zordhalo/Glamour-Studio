@@ -1,5 +1,7 @@
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:8080/api',
-  googleClientId: '66356487422-597vul5b05mqto440ie0bd2b80uvdp25.apps.googleusercontent.com'
+  googleClientId: '66356487422-kahggdcf3joaoml4knsoh7l9pr5uokru.apps.googleusercontent.com',
+  googleRedirectUri: 'http://localhost:4200/settings',
+  googleCalendarScope: 'https://www.googleapis.com/auth/calendar.events'
 };

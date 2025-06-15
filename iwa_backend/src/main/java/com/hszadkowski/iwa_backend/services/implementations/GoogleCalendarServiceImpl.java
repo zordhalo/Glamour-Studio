@@ -141,6 +141,67 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
     }
 
     @Override
+    public CalendarTokenResponseDto saveAccessToken(String accessToken, String userEmail)
+            throws IOException, GeneralSecurityException {
+
+        AppUser user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Create credential with the access token
+        NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+        
+        Credential credential = new Credential.Builder(BearerToken.authorizationHeaderAccessMethod())
+                .setJsonFactory(JSON_FACTORY)
+                .setTransport(httpTransport)
+                .build();
+        
+        credential.setAccessToken(accessToken);
+
+        // Get the user's actual Google email using OAuth2 API
+        String googleEmail;
+        try {
+            Oauth2 oauth2 = new Oauth2.Builder(
+                    httpTransport,
+                    JSON_FACTORY,
+                    credential)
+                    .setApplicationName(APPLICATION_NAME)
+                    .build();
+
+            Userinfo userinfo = oauth2.userinfo().get().execute();
+            googleEmail = userinfo.getEmail();
+
+            log.info("Retrieved Google email: {} for user: {}", googleEmail, userEmail);
+        } catch (Exception e) {
+            log.warn("Could not retrieve Google email via OAuth2 API, using provided email", e);
+            googleEmail = userEmail; // Fallback to provided email
+        }
+
+        // Delete existing token if any
+        calendarTokenRepository.findByAppUserAndProvider(user, PROVIDER_GOOGLE)
+                .ifPresent(calendarTokenRepository::delete);
+
+        // Save new token
+        CalendarToken token = new CalendarToken();
+        token.setAppUser(user);
+        token.setProvider(PROVIDER_GOOGLE);
+        token.setAccessToken(accessToken);
+        // Note: We don't have a refresh token with implicit flow
+        token.setRefreshToken(null);
+        // Access tokens from implicit flow typically expire in 1 hour
+        token.setExpiresAt(LocalDateTime.now().plusHours(1));
+        token.setEmail(googleEmail);
+
+        CalendarToken savedToken = calendarTokenRepository.save(token);
+
+        return new CalendarTokenResponseDto(
+                true,
+                PROVIDER_GOOGLE,
+                savedToken.getExpiresAt(),
+                savedToken.getEmail()
+        );
+    }
+
+    @Override
     public GoogleCalendarEventDto createCalendarEvent(Appointment appointment, String userEmail)
             throws IOException, GeneralSecurityException {
 
@@ -348,6 +409,14 @@ public class GoogleCalendarServiceImpl implements GoogleCalendarService {
 
         // Check if token is expired or expires soon (within 5 minutes)
         if (token.getExpiresAt().isBefore(LocalDateTime.now().plusMinutes(5))) {
+            // If we don't have a refresh token (implicit flow), we can't refresh
+            if (token.getRefreshToken() == null) {
+                log.warn("Cannot refresh token for user {} - no refresh token available (implicit flow)", userEmail);
+                // Delete the expired token
+                calendarTokenRepository.delete(token);
+                throw new RuntimeException("Token expired and cannot be refreshed. Please reconnect Google Calendar.");
+            }
+
             GoogleAuthorizationCodeFlow flow = createFlow();
 
             try {
