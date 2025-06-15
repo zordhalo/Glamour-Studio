@@ -15,6 +15,8 @@ public interface GoogleCalendarService {
 
     CalendarTokenResponseDto handleOAuthCallback(String authCode, String userEmail) throws IOException, GeneralSecurityException;
 
+    CalendarTokenResponseDto saveAccessToken(String accessToken, String userEmail) throws IOException, GeneralSecurityException;
+
     GoogleCalendarEventDto createCalendarEvent(Appointment appointment, String userEmail) throws IOException, GeneralSecurityException;
 
     GoogleCalendarEventDto updateCalendarEvent(Appointment appointment, String userEmail) throws IOException, GeneralSecurityException;
