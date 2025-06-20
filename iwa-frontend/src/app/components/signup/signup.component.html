@@ -61,8 +61,10 @@
                    formControlName="phoneNum"
                    placeholder="Enter your phone number"
                    autocomplete="tel"
+                   appPhoneFormat
                    required />
             <mat-icon matPrefix>phone</mat-icon>
+            <mat-hint>Format: 123-456-789 (9 digits)</mat-hint>
             @if (signupForm.get('phoneNum')?.touched && signupForm.get('phoneNum')?.errors) {
               <mat-error>{{ getPhoneErrorMessage() }}</mat-error>
             }
@@ -86,7 +88,7 @@
                       type="button">
                 <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
               </button>
-              <mat-hint>Minimum 8 characters</mat-hint>
+              <mat-hint>Minimum 8 characters with uppercase, lowercase, number, and special character</mat-hint>
               @if (signupForm.get('password')?.touched && signupForm.get('password')?.errors) {
                 <mat-error>{{ getPasswordErrorMessage() }}</mat-error>
               }

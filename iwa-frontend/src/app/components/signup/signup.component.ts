@@ -14,6 +14,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { Subscription, take } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { CustomValidators } from '../../utils/validators';
+import { PhoneFormatDirective } from '../../directives/phone-format.directive';
 
 @Component({
   selector: 'app-signup',
@@ -29,7 +31,8 @@ import { environment } from '../../../environments/environment';
     MatSnackBarModule,
     MatIconModule,
     MatDividerModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    PhoneFormatDirective
   ],
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss']
@@ -55,11 +58,35 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar
   ) {
     this.signupForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      surname: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      phoneNum: ['', [Validators.required, Validators.pattern(/^[\d\s\-\+\(\)]+$/)]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      name: ['', [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(50),
+        CustomValidators.nameValidator(),
+        CustomValidators.trimWhitespace()
+      ]],
+      surname: ['', [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(50),
+        CustomValidators.nameValidator(),
+        CustomValidators.trimWhitespace()
+      ]],
+      email: ['', [
+        Validators.required,
+        CustomValidators.emailValidator(),
+        CustomValidators.trimWhitespace()
+      ]],
+      phoneNum: ['', [
+        Validators.required,
+        CustomValidators.phoneNumber(),
+        CustomValidators.trimWhitespace()
+      ]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(8),
+        CustomValidators.strongPassword()
+      ]],
     });
   }
 
@@ -245,6 +272,12 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
     if (nameControl?.hasError('minlength')) {
       return 'First name must be at least 2 characters';
     }
+    if (nameControl?.hasError('maxlength')) {
+      return 'First name cannot exceed 50 characters';
+    }
+    if (nameControl?.hasError('nameValidator')) {
+      return nameControl.errors?.['nameValidator']?.message || 'Invalid first name format';
+    }
     return '';
   }
 
@@ -255,6 +288,12 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     if (surnameControl?.hasError('minlength')) {
       return 'Last name must be at least 2 characters';
+    }
+    if (surnameControl?.hasError('maxlength')) {
+      return 'Last name cannot exceed 50 characters';
+    }
+    if (surnameControl?.hasError('nameValidator')) {
+      return surnameControl.errors?.['nameValidator']?.message || 'Invalid last name format';
     }
     return '';
   }
@@ -267,6 +306,9 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
     if (emailControl?.hasError('email')) {
       return 'Please enter a valid email address';
     }
+    if (emailControl?.hasError('emailValidator')) {
+      return emailControl.errors?.['emailValidator']?.message || 'Please enter a valid email address';
+    }
     return '';
   }
 
@@ -278,6 +320,9 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
     if (phoneControl?.hasError('pattern')) {
       return 'Please enter a valid phone number';
     }
+    if (phoneControl?.hasError('phoneNumber')) {
+      return phoneControl.errors?.['phoneNumber']?.message || 'Please enter a valid phone number';
+    }
     return '';
   }
 
@@ -288,6 +333,17 @@ export class SignupComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     if (passwordControl?.hasError('minlength')) {
       return 'Password must be at least 8 characters';
+    }
+    if (passwordControl?.hasError('strongPassword')) {
+      const errors = passwordControl.errors?.['strongPassword'];
+      if (errors) {
+        // Return the first error message
+        const errorKeys = Object.keys(errors);
+        if (errorKeys.length > 0) {
+          return errors[errorKeys[0]];
+        }
+      }
+      return 'Password does not meet security requirements';
     }
     return '';
   }

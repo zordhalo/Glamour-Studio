@@ -1,6 +1,12 @@
 .dialog-container {
   width: 100%;
   max-width: 500px;
+  min-width: 300px;
+
+  @media (max-width: 576px) {
+    max-width: 95vw;
+    min-width: 280px;
+  }
 }
 
 .dialog-header {
@@ -200,12 +206,23 @@
 }
 
 // Responsive
-@media (max-width: 500px) {
+@media (max-width: 576px) {
   .dialog-header {
     padding: 1.5rem 1rem 1rem;
 
+    .icon-wrapper {
+      width: 60px;
+      height: 60px;
+
+      &.warning mat-icon {
+        font-size: 2.5rem !important;
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+      }
+    }
+
     h2 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
     }
   }
 
@@ -215,15 +232,74 @@
 
   .appointment-summary {
     padding: 1rem;
+
+    .summary-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      h3 {
+        font-size: 1.1rem;
+      }
+    }
+
+    .summary-details {
+      gap: 0.75rem;
+    }
+
+    .detail-item {
+      gap: 0.5rem;
+
+      mat-icon {
+        font-size: 1.1rem !important;
+        width: 1.1rem !important;
+        height: 1.1rem !important;
+      }
+    }
+  }
+
+  .policy-notice {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    mat-icon {
+      align-self: flex-start;
+    }
   }
 
   .dialog-actions {
     padding: 1rem !important;
     flex-direction: column-reverse;
+    gap: 0.75rem;
 
     button {
       width: 100%;
+      min-width: unset;
     }
+  }
+}
+
+@media (max-width: 400px) {
+  .dialog-header {
+    padding: 1rem 0.75rem 0.75rem;
+
+    h2 {
+      font-size: 1.25rem;
+    }
+  }
+
+  .dialog-content {
+    padding: 0 0.75rem 1rem !important;
+  }
+
+  .appointment-summary,
+  .policy-notice {
+    padding: 0.75rem;
+  }
+
+  .dialog-actions {
+    padding: 0.75rem !important;
   }
 }
 
@@ -232,5 +308,20 @@
   .mat-mdc-dialog-container {
     border-radius: 16px !important;
     padding: 0 !important;
+    max-height: 95vh !important;
+    overflow-y: auto !important;
+
+    @media (max-width: 576px) {
+      border-radius: 12px !important;
+      margin: 8px !important;
+      max-width: calc(100vw - 16px) !important;
+      max-height: calc(100vh - 16px) !important;
+    }
+  }
+
+  .mat-mdc-dialog-surface {
+    @media (max-width: 576px) {
+      max-width: none !important;
+    }
   }
 }

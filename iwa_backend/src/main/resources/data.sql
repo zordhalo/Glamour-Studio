@@ -62,10 +62,10 @@ INSERT INTO services (name, description, duration_min, price) VALUES
 
 -- Basic Makeup slots (service_id = 1)
 INSERT INTO availability_slots (app_user_id, service_id, start_time, end_time, is_booked) VALUES
-(1, 1, '2025-06-20 09:00:00', '2025-06-20 10:00:00', false),
-(1, 1, '2025-06-10 10:30:00', '2025-06-10 11:30:00', false),
-(1, 1, '2025-06-11 14:00:00', '2025-06-11 15:00:00', false),
-(1, 1, '2025-06-12 09:00:00', '2025-06-12 10:00:00', false);
+(1, 1, '2025-06-30 09:00:00', '2025-06-30 10:00:00', false),
+(1, 1, '2025-06-30 10:30:00', '2025-06-30 11:30:00', false),
+(1, 1, '2025-07-02 14:00:00', '2025-07-02 15:00:00', false),
+(1, 1, '2025-07-01 09:00:00', '2025-07-01 10:00:00', false);
 
 -- Evening Makeup slots (service_id = 2)
 INSERT INTO availability_slots (app_user_id, service_id, start_time, end_time, is_booked) VALUES

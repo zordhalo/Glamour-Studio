@@ -6,6 +6,7 @@ import { OAuthService } from '../../services/oauth.service';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { Subscription } from 'rxjs';
+import { CustomValidators } from '../../utils/validators';
 
 // Material Modules
 import { MatCardModule } from '@angular/material/card';
@@ -54,7 +55,11 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [
+        Validators.required,
+        CustomValidators.emailValidator(),
+        CustomValidators.trimWhitespace()
+      ]],
       password: ['', [Validators.required]],
     });
   }
@@ -151,6 +156,9 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     if (emailControl?.hasError('email')) {
       return 'Please enter a valid email address';
+    }
+    if (emailControl?.hasError('emailValidator')) {
+      return emailControl.errors?.['emailValidator']?.message || 'Please enter a valid email address';
     }
     return '';
   }
