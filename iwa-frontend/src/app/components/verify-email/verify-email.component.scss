@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #87ceaa 0%, #52b788 100%);
   padding: 2rem;
 }
 
@@ -31,7 +31,7 @@
       mat-card-title {
         font-size: 2rem;
         font-weight: 700;
-        color: #1976d2;
+        color: #2d6a4f;
         margin: 0;
       }
     }
@@ -46,7 +46,7 @@
           font-size: 80px;
           width: 80px;
           height: 80px;
-          color: #4caf50;
+          color: #52b788;
         }
       }
 
@@ -58,7 +58,7 @@
         font-size: 1rem;
 
         strong {
-          color: #1976d2;
+          color: #52b788;
           font-weight: 600;
         }
       }
@@ -109,10 +109,12 @@
           font-size: 1rem;
           font-weight: 600;
           transition: all 0.3s ease;
+          background: #52b788 !important;
+          color: white !important;
 
           &:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(25, 118, 210, 0.3);
+            box-shadow: 0 8px 20px rgba(82, 183, 136, 0.3);
           }
 
           &:disabled {
@@ -137,11 +139,11 @@
           .resend-button {
             margin-left: 0.5rem;
             font-weight: 600;
-            color: #1976d2;
+            color: #52b788;
             transition: all 0.3s ease;
 
             &:hover {
-              color: #1565c0;
+              color: #2d6a4f;
               text-decoration: underline;
             }
           }
@@ -170,8 +172,8 @@
           text-decoration: none;
 
           &:hover {
-            color: #1976d2;
-            background: rgba(25, 118, 210, 0.05);
+            color: #52b788;
+            background: rgba(82, 183, 136, 0.05);
             transform: translateY(-1px);
 
             mat-icon {
