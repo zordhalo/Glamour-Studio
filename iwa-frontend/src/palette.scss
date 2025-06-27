@@ -1,73 +1,91 @@
-/* Coolors Exported Palette - https://coolors.co/f7fff7-231f20-17a398-f4f4ed */
+/* Coolors Exported Palette - Light Green Calming Theme */
 
-/* CSS HEX */
+/* CSS HEX - Light Greenish Calming Colors */
 :root {
-  --mint-cream: #f7fff7ff;
-  --raisin-black: #231f20ff;
-  --persian-green: #17a398ff;
-  --baby-powder: #f4f4edff;
+  --mint-cream: #f0fff4ff;        /* Soft mint background */
+  --sage-green: #87ceaaff;        /* Primary sage green */
+  --forest-green: #52b788ff;      /* Deeper green accent */
+  --tea-green: #d8f3dcff;         /* Light green surface */
+  --pale-mint: #e8f5e8ff;         /* Very light mint */
 }
 
 /* CSS HSL */
 :root {
-  --mint-cream-hsl: hsla(120, 100%, 98%, 1);
-  --raisin-black-hsl: hsla(345, 6%, 13%, 1);
-  --persian-green-hsl: hsla(175, 75%, 36%, 1);
-  --baby-powder-hsl: hsla(60, 24%, 94%, 1);
+  --mint-cream-hsl: hsla(120, 100%, 97%, 1);
+  --sage-green-hsl: hsla(145, 44%, 67%, 1);
+  --forest-green-hsl: hsla(145, 52%, 58%, 1);
+  --tea-green-hsl: hsla(134, 41%, 88%, 1);
+  --pale-mint-hsl: hsla(120, 25%, 92%, 1);
 }
 
 /* SCSS HEX */
-$mint-cream: #f7fff7ff;
-$raisin-black: #231f20ff;
-$persian-green: #17a398ff;
-$baby-powder: #f4f4edff;
+$mint-cream: #f0fff4ff;
+$sage-green: #87ceaaff;
+$forest-green: #52b788ff;
+$tea-green: #d8f3dcff;
+$pale-mint: #e8f5e8ff;
 
 /* SCSS HSL */
-$mint-cream-hsl: hsla(120, 100%, 98%, 1);
-$raisin-black-hsl: hsla(345, 6%, 13%, 1);
-$persian-green-hsl: hsla(175, 75%, 36%, 1);
-$baby-powder-hsl: hsla(60, 24%, 94%, 1);
+$mint-cream-hsl: hsla(120, 100%, 97%, 1);
+$sage-green-hsl: hsla(145, 44%, 67%, 1);
+$forest-green-hsl: hsla(145, 52%, 58%, 1);
+$tea-green-hsl: hsla(134, 41%, 88%, 1);
+$pale-mint-hsl: hsla(120, 25%, 92%, 1);
 
 /* SCSS RGB */
-$mint-cream-rgb: rgba(247, 255, 247, 1);
-$raisin-black-rgb: rgba(35, 31, 32, 1);
-$persian-green-rgb: rgba(23, 163, 152, 1);
-$baby-powder-rgb: rgba(244, 244, 237, 1);
+$mint-cream-rgb: rgba(240, 255, 244, 1);
+$sage-green-rgb: rgba(135, 206, 170, 1);
+$forest-green-rgb: rgba(82, 183, 136, 1);
+$tea-green-rgb: rgba(216, 243, 220, 1);
+$pale-mint-rgb: rgba(232, 245, 232, 1);
 
-/* SCSS Gradient */
-$gradient-top: linear-gradient(0deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
-$gradient-right: linear-gradient(90deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
-$gradient-bottom: linear-gradient(180deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
-$gradient-left: linear-gradient(270deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
-$gradient-top-right: linear-gradient(45deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
-$gradient-bottom-right: linear-gradient(135deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
-$gradient-top-left: linear-gradient(225deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
-$gradient-bottom-left: linear-gradient(315deg, #f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
-$gradient-radial: radial-gradient(#f7fff7ff, #231f20ff, #17a398ff, #f4f4edff);
+/* SCSS Gradient - Light Green Variations */
+$gradient-top: linear-gradient(0deg, $mint-cream, $sage-green, $forest-green, $tea-green);
+$gradient-right: linear-gradient(90deg, $mint-cream, $sage-green, $forest-green, $tea-green);
+$gradient-bottom: linear-gradient(180deg, $mint-cream, $sage-green, $forest-green, $tea-green);
+$gradient-left: linear-gradient(270deg, $mint-cream, $sage-green, $forest-green, $tea-green);
+$gradient-top-right: linear-gradient(45deg, $mint-cream, $sage-green, $forest-green, $tea-green);
+$gradient-bottom-right: linear-gradient(135deg, $mint-cream, $sage-green, $forest-green, $tea-green);
+$gradient-top-left: linear-gradient(225deg, $mint-cream, $sage-green, $forest-green, $tea-green);
+$gradient-bottom-left: linear-gradient(315deg, $mint-cream, $sage-green, $forest-green, $tea-green);
+$gradient-radial: radial-gradient($mint-cream, $sage-green, $forest-green, $tea-green);
 
-/* Modern palette variations using your colors */
+/* Modern palette variations using green colors */
 $primary-palette: (
-  50: lighten($persian-green, 45%),
-  100: lighten($persian-green, 35%),
-  200: lighten($persian-green, 25%),
-  300: lighten($persian-green, 15%),
-  400: lighten($persian-green, 8%),
-  500: $persian-green,
-  600: darken($persian-green, 8%),
-  700: darken($persian-green, 15%),
-  800: darken($persian-green, 25%),
-  900: darken($persian-green, 35%),
+  50: lighten($forest-green, 45%),    // Very light green
+  100: lighten($forest-green, 35%),   // Light green
+  200: lighten($forest-green, 25%),   // Lighter green
+  300: lighten($forest-green, 15%),   // Medium light green
+  400: lighten($forest-green, 8%),    // Slightly light green
+  500: $forest-green,                 // Base forest green
+  600: darken($forest-green, 8%),     // Slightly dark green
+  700: darken($forest-green, 15%),    // Medium dark green
+  800: darken($forest-green, 25%),    // Dark green
+  900: darken($forest-green, 35%),    // Very dark green
 );
 
 $accent-palette: (
-  50: lighten($mint-cream, 5%),
-  100: $mint-cream,
-  200: mix($mint-cream, $persian-green, 90%),
-  300: mix($mint-cream, $persian-green, 80%),
-  400: mix($mint-cream, $persian-green, 70%),
-  500: mix($mint-cream, $persian-green, 50%),
-  600: mix($mint-cream, $persian-green, 30%),
-  700: mix($mint-cream, $persian-green, 20%),
-  800: mix($mint-cream, $persian-green, 10%),
-  900: $persian-green,
+  50: lighten($sage-green, 25%),      // Very light sage
+  100: lighten($sage-green, 15%),     // Light sage
+  200: lighten($sage-green, 10%),     // Lighter sage
+  300: lighten($sage-green, 5%),      // Slightly light sage
+  400: $sage-green,                   // Base sage green
+  500: mix($sage-green, $forest-green, 70%), // Mixed sage-forest
+  600: mix($sage-green, $forest-green, 50%), // Balanced mix
+  700: mix($sage-green, $forest-green, 30%), // More forest
+  800: darken($forest-green, 10%),    // Dark forest
+  900: darken($forest-green, 20%),    // Very dark forest
 );
+
+/* Additional calming green shades */
+$eucalyptus: #6ba368ff;              // Eucalyptus green
+$mint-green: #98fb98ff;              // Mint green
+$sea-green: #90ee90ff;               // Sea green
+$spring-green: #00ff7fff;            // Spring green (use sparingly)
+$lime-green: #32cd32ff;              // Lime green (use sparingly)
+
+/* Soft complementary colors for accents */
+$soft-coral: #ffb3baff;              // Soft coral for warm accents
+$soft-peach: #ffd1dcff;              // Soft peach for gentle contrast
+$soft-lavender: #e6e6faff;           // Very soft lavender for subtle variety
+$warm-cream: #fef7f0ff;              // Warm cream for backgrounds

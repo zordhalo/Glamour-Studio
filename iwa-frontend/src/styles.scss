@@ -11,8 +11,8 @@
 $theme: mat.define-theme((
   color: (
     theme-type: light,
-    primary: mat.$azure-palette,
-    tertiary: mat.$blue-palette,
+    primary: mat.$green-palette,
+    tertiary: mat.$cyan-palette,
   ),
   typography: (
     brand-family: 'Inter, sans-serif',
@@ -40,7 +40,7 @@ html, body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
   color: #333;
-  background: #f8f9fa;
+  background: #f0fff4;
   scroll-behavior: smooth;
 }
 
@@ -248,15 +248,15 @@ select:focus {
 
   /* Color variables for components */
   --surface: #ffffff;
-  --surface-light: #f8f9fa;
-  --primary-color: #0e517a;
-  --primary-light: #64b5f6;
-  --primary-dark: #1976d2;
-  --secondary-color: #4caf50;
-  --secondary-dark: #388e3c;
-  --accent-warm: #ff9800;
-  --accent-coral: #ff5722;
-  --success: #4caf50;
+  --surface-light: #f0fff4;
+  --primary-color: #52b788;
+  --primary-light: #87ceaa;
+  --primary-dark: #2d6a4f;
+  --secondary-color: #40916c;
+  --secondary-dark: #2d6a4f;
+  --accent-warm: #52b788;
+  --accent-coral: #87ceaa;
+  --success: #52b788;
   --text-primary: #212121;
   --text-secondary: #757575;
 }
