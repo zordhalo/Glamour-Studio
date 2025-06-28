@@ -3,11 +3,12 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  // Updated background to match the application's theme
+  background: linear-gradient(135deg, #87ceaa 0%, #52b788 100%);
   position: relative;
   overflow: hidden;
 
-  // Add subtle gradient overlay like landing page
+  // Updated overlay to use subtle green tones
   &::before {
     content: '';
     position: absolute;
@@ -15,7 +16,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, rgba(255, 182, 193, 0.1), rgba(255, 160, 122, 0.1));
+    background: linear-gradient(45deg, rgba(135, 206, 170, 0.1), rgba(82, 183, 136, 0.1));
     pointer-events: none;
   }
 }
@@ -28,6 +29,7 @@
   z-index: 1;
 }
 
+// The glass effect remains as it is theme-agnostic and works well
 .glass-effect {
   backdrop-filter: blur(20px);
   background: rgba(255, 255, 255, 0.95);
@@ -55,7 +57,7 @@ mat-card-title {
   text-align: center;
   position: relative;
 
-  // Optional: Add a subtle gradient effect that's more visible
+  // Updated underline to use the green theme gradient
   &::after {
     content: '';
     position: absolute;
@@ -64,7 +66,7 @@ mat-card-title {
     transform: translateX(-50%);
     width: 60px;
     height: 4px;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    background: linear-gradient(45deg, #87ceaa, #52b788);
     border-radius: 2px;
   }
 }
@@ -93,11 +95,11 @@ mat-form-field {
       background: transparent;
     }
 
-    // Focus state
+    // Updated focus state to use green
     .mat-mdc-form-field.mat-focused {
       .mat-mdc-text-field-wrapper {
         background: white;
-        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        box-shadow: 0 0 0 2px rgba(82, 183, 136, 0.2);
       }
     }
 
@@ -107,8 +109,9 @@ mat-form-field {
       font-weight: 500;
     }
 
+    // Updated focused label color to green
     .mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
-      color: #667eea;
+      color: #52b788;
     }
 
     // Input text
@@ -119,12 +122,13 @@ mat-form-field {
   }
 }
 
+// Updated button to match primary CTA style
 button[type="submit"] {
   height: 52px;
   font-size: 1.1rem;
   font-weight: 600;
   border-radius: 12px;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #52b788;
   color: white;
   border: none;
   transition: all 0.3s ease;
@@ -133,13 +137,14 @@ button[type="submit"] {
 
   &:hover:not([disabled]) {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
-    background: linear-gradient(45deg, #5a6fe5, #6d42a1);
+    box-shadow: 0 12px 40px rgba(82, 183, 136, 0.4);
+    background: #62c798; // Lighter green on hover
   }
 
   &[disabled] {
     opacity: 0.7;
     cursor: not-allowed;
+    background: #52b788;
   }
 }
 
@@ -190,17 +195,19 @@ button[type="submit"] {
     }
   }
 
+  // Updated loading text to green
   .oauth-loading {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
     padding: 1rem;
-    color: #667eea;
+    color: #52b788;
     font-weight: 500;
   }
 }
 
+// Error message styling (remains red for universal convention)
 .error-message {
   color: #dc3545;
   text-align: center;
@@ -219,6 +226,7 @@ button[type="submit"] {
   75% { transform: translateX(5px); }
 }
 
+// Updated link color to green
 .signup-link {
   text-align: center;
   margin-top: 1.5rem;
@@ -226,7 +234,7 @@ button[type="submit"] {
   font-size: 0.9rem;
 
   a {
-    color: #667eea;
+    color: #52b788;
     font-weight: 600;
     text-decoration: none;
     transition: all 0.3s ease;
@@ -239,12 +247,12 @@ button[type="submit"] {
       left: 0;
       width: 0;
       height: 2px;
-      background: #667eea;
+      background: #52b788;
       transition: width 0.3s ease;
     }
 
     &:hover {
-      color: #5a6fe5;
+      color: #2d6a4f; // Darker green on hover
 
       &::after {
         width: 100%;
@@ -268,11 +276,11 @@ button[type="submit"] {
   }
 }
 
-// Loading spinner customization
+// Updated loading spinner to green
 ::ng-deep {
   .mat-mdc-progress-spinner {
     circle {
-      stroke: #667eea !important;
+      stroke: #52b788 !important;
     }
   }
 }
@@ -292,4 +300,3 @@ button[type="submit"] {
     font-size: 2rem;
   }
 }
-

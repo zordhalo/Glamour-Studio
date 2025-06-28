@@ -1,14 +1,12 @@
-// Modern Services Page Design
 .services-page {
   min-height: 100vh;
   background: #fafbfc;
 }
 
-// Hero Section
 .hero-section {
   position: relative;
   min-height: 60vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #87ceaa 0%, #52b788 100%);
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -21,8 +19,8 @@
     right: 0;
     bottom: 0;
     background:
-      radial-gradient(circle at 20% 80%, rgba(255, 182, 193, 0.15) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(255, 160, 122, 0.15) 0%, transparent 50%);
+      radial-gradient(circle at 20% 80%, rgba(135, 206, 170, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(82, 183, 136, 0.15) 0%, transparent 50%);
     pointer-events: none;
   }
 }
@@ -72,13 +70,7 @@
   line-height: 1.1;
   margin-bottom: 1.5rem;
   letter-spacing: -0.02em;
-
-  .gradient-text {
-    background: linear-gradient(45deg, #ff6b9d, #ffc3a0);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+  color: white;
 }
 
 .hero-subtitle {
@@ -89,7 +81,6 @@
   margin: 0 auto;
 }
 
-// Services Section
 .services-section {
   padding: 6rem 0;
   background: #fafbfc;
@@ -108,7 +99,7 @@
   .section-title {
     font-size: 3.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -125,7 +116,6 @@
   }
 }
 
-// Services Grid
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -152,7 +142,7 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #87ceaa, #52b788);
     transform: scaleX(0);
     transition: transform 0.3s ease;
   }
@@ -160,8 +150,8 @@
   &:hover {
     transform: translateY(-8px);
     box-shadow:
-      0 20px 40px rgba(0, 0, 0, 0.12),
-      0 8px 16px rgba(0, 0, 0, 0.08);
+      0 20px 40px rgba(82, 183, 136, 0.12),
+      0 8px 16px rgba(82, 183, 136, 0.08);
 
     &::before {
       transform: scaleX(1);
@@ -176,7 +166,8 @@
     }
 
     .book-button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #52b788;
+      border-color: #52b788;
       transform: translateX(5px);
 
       mat-icon {
@@ -192,7 +183,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(118, 75, 162, 0.02) 100%);
+  background: linear-gradient(135deg, rgba(135, 206, 170, 0.02) 0%, rgba(82, 183, 136, 0.02) 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
 
@@ -207,7 +198,7 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(82, 183, 136, 0.1) 0%, transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -223,13 +214,13 @@
 .service-icon {
   width: 70px;
   height: 70px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #87ceaa 0%, #52b788 100%);
   border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(82, 183, 136, 0.3);
 
   mat-icon {
     color: white;
@@ -286,7 +277,7 @@
   font-weight: 500;
 
   mat-icon {
-    color: #667eea;
+    color: #52b788;
     font-size: 18px;
     width: 18px;
     height: 18px;
@@ -315,7 +306,7 @@
   .price {
     font-size: 2rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -348,7 +339,6 @@
   }
 }
 
-// Empty State
 .no-services {
   display: flex;
   justify-content: center;
@@ -384,10 +374,9 @@
   }
 }
 
-// CTA Section
 .cta-section {
   padding: 6rem 0;
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  background: linear-gradient(135deg, #87ceaa 0%, #52b788 100%);
   color: white;
   text-align: center;
 }
@@ -425,10 +414,7 @@
     display: block;
     font-size: 3rem;
     font-weight: 800;
-    background: linear-gradient(45deg, #ff6b9d, #ffc3a0);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: white;
     line-height: 1;
     margin-bottom: 0.5rem;
   }
@@ -447,13 +433,14 @@
   font-size: 1.1rem !important;
   font-weight: 700 !important;
   border-radius: 16px !important;
-  background: linear-gradient(135deg, #ff6b9d 0%, #ffc3a0 100%) !important;
-  box-shadow: 0 8px 32px rgba(255, 107, 157, 0.3) !important;
+  background: white !important;
+  color: #2d6a4f !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
   transition: all 0.3s ease !important;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 40px rgba(255, 107, 157, 0.4) !important;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25) !important;
   }
 
   mat-icon {
@@ -461,7 +448,6 @@
   }
 }
 
-// Responsive Design
 @media (max-width: 1200px) {
   .services-grid {
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));

@@ -1,5 +1,6 @@
 .header-toolbar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  // Keeping the approved lighter green gradient
+  background: linear-gradient(135deg, #87ceaa 0%, #52b788 100%) !important;
   color: white !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
   position: sticky !important;
@@ -51,17 +52,14 @@
   font-size: 2rem !important;
   width: 2rem !important;
   height: 2rem !important;
-  color: #ff6b9d !important;
-  text-shadow: 0 2px 10px rgba(255, 107, 157, 0.3);
+  color: white !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .brand-name {
   font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(45deg, #ffffff, #ff6b9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: white;
   text-shadow: none;
 }
 
@@ -106,7 +104,7 @@
   transition: fill 0.3s ease;
 
   .social-link:hover & {
-    fill: #ff6b9d;
+    fill: white;
   }
 }
 
@@ -144,7 +142,6 @@
     }
   }
 
-  // Special handling for icon-only buttons
   a[mat-icon-button], button[mat-icon-button] {
     width: 40px !important;
     height: 40px !important;
@@ -160,17 +157,21 @@
 }
 
 .signup-btn {
-  background: linear-gradient(45deg, #ff6b9d, #ffc3a0) !important;
+  // Using the primary green with a white border to make it pop
+  background: #52b788 !important;
   color: white !important;
+  border: 2px solid rgba(255, 255, 255, 0.8) !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3) !important;
   height: 40px !important;
   display: flex !important;
   align-items: center !important;
+  padding: 0 1.5rem !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
 
   &:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
+    background: #62c798 !important; // Slightly lighter green on hover
   }
 }
 
@@ -218,7 +219,6 @@
         margin-right: 0.25rem !important;
       }
 
-      // Hide text on very small screens, keep only icons
       @media (max-width: 480px) {
         span {
           display: none;
@@ -242,7 +242,7 @@
 
 @media (max-width: 480px) {
   .social-links {
-    display: none; // Hide social links on very small screens to save space
+    display: none !important;
   }
 
   .nav-section {

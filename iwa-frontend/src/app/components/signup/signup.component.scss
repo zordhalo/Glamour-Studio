@@ -3,12 +3,11 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #87ceaa 0%, #52b788 100%);
   padding: 2rem;
   position: relative;
   overflow: hidden;
 
-  // Add subtle gradient overlay like landing page
   &::before {
     content: '';
     position: absolute;
@@ -16,7 +15,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, rgba(255, 182, 193, 0.1), rgba(255, 160, 122, 0.1));
+    background: linear-gradient(45deg, rgba(135, 206, 170, 0.1), rgba(82, 183, 136, 0.1));
     pointer-events: none;
   }
 }
@@ -56,7 +55,6 @@ mat-card-title {
   text-align: center;
   position: relative;
 
-  // Optional: Add a subtle gradient effect that's more visible
   &::after {
     content: '';
     position: absolute;
@@ -65,7 +63,7 @@ mat-card-title {
     transform: translateX(-50%);
     width: 60px;
     height: 4px;
-    background: linear-gradient(45deg, #667eea, #764ba2);
+    background: linear-gradient(45deg, #87ceaa, #52b788);
     border-radius: 2px;
   }
 }
@@ -112,31 +110,28 @@ mat-form-field {
       background: transparent;
     }
 
-    // Focus state
+    // Updated focus state to use green
     .mat-mdc-form-field.mat-focused {
       .mat-mdc-text-field-wrapper {
         background: white;
-        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        box-shadow: 0 0 0 2px rgba(82, 183, 136, 0.2);
       }
     }
 
-    // Label styling
     .mat-mdc-floating-label {
       color: #666;
       font-weight: 500;
     }
 
     .mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
-      color: #667eea;
+      color: #52b788;
     }
 
-    // Input text
     .mat-mdc-input-element {
       color: #333;
       font-size: 1rem;
     }
 
-    // Error state
     .mat-mdc-form-field.mat-form-field-invalid {
       .mat-mdc-text-field-wrapper {
         box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.3);
@@ -145,12 +140,13 @@ mat-form-field {
   }
 }
 
+
 .submit-button {
   height: 52px;
   font-size: 1.1rem;
   font-weight: 600;
   border-radius: 12px;
-  background: linear-gradient(45deg, #667eea, #764ba2);
+  background: #52b788;
   color: white;
   border: none;
   transition: all 0.3s ease;
@@ -163,13 +159,14 @@ mat-form-field {
 
   &:hover:not([disabled]) {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
-    background: linear-gradient(45deg, #5a6fe5, #6d42a1);
+    box-shadow: 0 12px 40px rgba(82, 183, 136, 0.4);
+    background: #62c798; // Lighter green on hover
   }
 
   &[disabled] {
     opacity: 0.7;
     cursor: not-allowed;
+    background: #52b788;
   }
 
   .button-spinner {
@@ -177,16 +174,17 @@ mat-form-field {
   }
 }
 
+
 .oauth-notice {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  background: linear-gradient(135deg, rgba(135, 206, 170, 0.1), rgba(82, 183, 136, 0.1));
   border-radius: 12px;
   color: #333;
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(82, 183, 136, 0.2);
   font-size: 0.9rem;
   line-height: 1.5;
 
@@ -194,7 +192,7 @@ mat-form-field {
     font-size: 20px;
     width: 20px;
     height: 20px;
-    color: #667eea;
+    color: #52b788;
     flex-shrink: 0;
   }
 }
@@ -232,7 +230,6 @@ mat-form-field {
       width: 100% !important;
       max-width: 100% !important;
 
-      // Style the Google button
       .nsm7Bb-HzV7m-LgbsSe {
         width: 100% !important;
         height: 48px !important;
@@ -246,13 +243,14 @@ mat-form-field {
     }
   }
 
+  // Updated loading text to green
   .oauth-loading {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
     padding: 1rem;
-    color: #667eea;
+    color: #52b788;
     font-weight: 500;
   }
 }
@@ -285,6 +283,7 @@ mat-form-field {
   75% { transform: translateX(5px); }
 }
 
+
 .login-link {
   text-align: center;
   margin-top: 1.5rem;
@@ -292,7 +291,7 @@ mat-form-field {
   font-size: 0.9rem;
 
   .link-text {
-    color: #667eea;
+    color: #52b788;
     font-weight: 600;
     text-decoration: none;
     transition: all 0.3s ease;
@@ -305,12 +304,12 @@ mat-form-field {
       left: 0;
       width: 0;
       height: 2px;
-      background: #667eea;
+      background: #52b788;
       transition: width 0.3s ease;
     }
 
     &:hover {
-      color: #5a6fe5;
+      color: #2d6a4f; // Darker green on hover
 
       &::after {
         width: 100%;
@@ -334,7 +333,6 @@ mat-form-field {
   }
 }
 
-// Success/Error snackbar customization
 ::ng-deep {
   .error-snackbar {
     background: #dc3545 !important;
@@ -347,7 +345,7 @@ mat-form-field {
   }
 
   .success-snackbar {
-    background: #4caf50 !important;
+    background: #52b788 !important;
     color: white !important;
     border-radius: 12px !important;
 
@@ -356,10 +354,10 @@ mat-form-field {
     }
   }
 
-  // Loading spinner
+
   .mat-mdc-progress-spinner {
     circle {
-      stroke: #667eea !important;
+      stroke: #52b788 !important;
     }
   }
 }
@@ -393,4 +391,3 @@ mat-form-field {
     gap: 1rem;
   }
 }
-

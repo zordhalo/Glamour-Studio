@@ -1,6 +1,6 @@
 // Variables
-$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-$background-gradient: linear-gradient(135deg, #f5f7fa 0%, #e9ecf5 100%);
+$primary-gradient: linear-gradient(135deg, #87ceaa 0%, #52b788 100%);
+$background-gradient: #f8f9fa;
 $card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 
@@ -47,7 +47,7 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     font-size: 2.5rem !important;
     width: 2.5rem !important;
     height: 2.5rem !important;
-    color: #667eea;
+    color: #52b788;
   }
 }
 
@@ -61,7 +61,7 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   gap: 1rem;
 
   mat-spinner {
-    --mdc-circular-progress-active-indicator-color: #667eea;
+    --mdc-circular-progress-active-indicator-color: #52b788;
   }
 
   p {
@@ -93,7 +93,7 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
       gap: 0.5rem;
 
       mat-icon {
-        color: #667eea;
+        color: #52b788;
       }
     }
 
@@ -136,7 +136,7 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
 
     .mat-mdc-form-field-icon-prefix {
-      color: #667eea;
+      color: #52b788;
       padding: 0 12px;
     }
 
@@ -152,7 +152,7 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
       .mdc-notched-outline__leading,
       .mdc-notched-outline__notch,
       .mdc-notched-outline__trailing {
-        border-color: #667eea !important;
+        border-color: #52b788 !important;
       }
     }
 
@@ -160,7 +160,7 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
       .mdc-notched-outline__leading,
       .mdc-notched-outline__notch,
       .mdc-notched-outline__trailing {
-        border-color: #667eea !important;
+        border-color: #52b788 !important;
         border-width: 2px !important;
       }
     }
@@ -170,7 +170,7 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
 
     .mat-mdc-form-field.mat-focused .mat-mdc-form-field-label {
-      color: #667eea !important;
+      color: #52b788 !important;
     }
 
     .mat-mdc-form-field-hint {
@@ -200,13 +200,13 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
 .save-button {
-  background: $primary-gradient !important;
+  background: #52b788 !important;
   color: white !important;
   padding: 0.875rem 2rem !important;
   font-size: 1rem !important;
   font-weight: 500 !important;
   border-radius: 50px !important;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(82, 183, 136, 0.3) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: flex;
   align-items: center;
@@ -214,7 +214,7 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4) !important;
+    box-shadow: 0 6px 20px rgba(82, 183, 136, 0.4) !important;
   }
 
   &:disabled {
@@ -256,8 +256,8 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 
 .info-card {
   border-radius: 16px !important;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecf5 100%) !important;
-  border: 1px solid #e0e0e0 !important;
+  background: linear-gradient(135deg, #f0fdf4 0%, #e6f7f0 100%) !important;
+  border: 1px solid #d8f3dc !important;
   box-shadow: none !important;
 }
 
@@ -271,7 +271,7 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   font-size: 2.5rem !important;
   width: 2.5rem !important;
   height: 2.5rem !important;
-  color: #667eea;
+  color: #52b788;
   flex-shrink: 0;
 }
 
@@ -403,12 +403,6 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     }
   }
 
-  .status-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
   .status-badge {
     display: flex;
     align-items: center;
@@ -537,7 +531,7 @@ $card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 ::ng-deep {
   .success-snackbar {
     .mdc-snackbar__surface {
-      background: #27ae60 !important;
+      background: #52b788 !important;
     }
 
     .mat-mdc-snack-bar-label {
