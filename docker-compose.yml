@@ -8,5 +8,26 @@ services:
       - "5432:5432"
     volumes:
       - postgres_make_up_service_data:/var/lib/postgresql/data
+    networks:
+      - makeup_network
+
+  iwa_backend:
+    build:
+      context: ./iwa_backend
+      dockerfile: Dockerfile
+    env_file: "iwa_backend/makeUpServiceDB.env"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - make_up_service_db
+    networks:
+      - makeup_network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+
 volumes:
   postgres_make_up_service_data:
+
+networks:
+  makeup_network:
+    driver: bridge
